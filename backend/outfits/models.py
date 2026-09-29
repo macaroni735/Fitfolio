@@ -9,7 +9,7 @@ class Outfit(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='outfits'
+        related_name='outfits',
     )
     display_name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -17,6 +17,6 @@ class Outfit(models.Model):
     clothing = models.ManyToManyField(
         Clothing,
         related_name='outfits',
-        blank=True
+        blank=True,
     )
     created_at = models.DateTimeField(auto_now_add=True)

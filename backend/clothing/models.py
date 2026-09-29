@@ -8,7 +8,7 @@ class Clothing(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='clothing_items'
+        related_name='clothing_items',
     )
     display_name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -22,7 +22,7 @@ class Clothing(models.Model):
         max_digits=10,
         decimal_places=2,
         null=True,
-        blank=True
+        blank=True,
         )
     created_at = models.DateTimeField(auto_now_add=True)
     

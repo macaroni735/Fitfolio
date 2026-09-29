@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     
     'clothing',
     'outfits',
+    'ratings'
 ]
 
 MIDDLEWARE = [
