@@ -1,0 +1,107 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: #9EC0EB;
+    font-family: 'Poppins', sans-serif;
+}
+
+main {
+    width: 90%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding-top: 100px;
+    text-align: center;
+}
+
+h1 {
+    margin: 0;
+    font-size: 64px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    font-family: 'Playfair Display', serif;
+}
+
+h2 {
+    margin-top: 20px;
+    margin-bottom: 50px;
+    font-size: 28px;
+    font-weight: 400;
+}
+
+form { 
+    width: 100%;
+}
+
+form div{
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+input{
+    width: 100%;
+    padding: 18px 20px;
+
+    background-color: #F1B8D9;
+    border: none;
+    border-radius: 12px 0; 
+    font-size: 16px;
+}
+
+input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px #D98CB8;
+}
+
+button{
+    width:100%;
+    padding: 16px;
+
+    background-color: #C1D591;
+    border: none;
+    border-radius: 12px 0;
+
+    font-size: 18px;
+    font-weight:600;
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba (0,0,0,0.15);
+}
+
+button:active{
+    transform: translateY(0);
+}
+
+main > a{
+    display:inline-block;
+    margin-top: 25px;
+
+    color: #000000;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+
+    transition: 0.2s ease;
+
+}
+
+main > a:hover{
+    text-decoration: underline;
+    transform: translateY(-1px);
+
+
+}
