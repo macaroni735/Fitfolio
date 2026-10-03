@@ -19,7 +19,8 @@
         <h1>FITFOLIO</h1>
         <h2>Welcome back, User!</h2>
 
-        <form>
+        <form method="POST">
+            {% csrf_token %}
             <div>
                 <label for="email">Email: </label>
                 <input
