@@ -16,8 +16,14 @@ class Clothing(models.Model):
     gender = models.CharField(max_length=50, blank=True)
     size = models.CharField(max_length=20, blank=True)
     tags = models.JSONField(default=list, blank=True)
-    front_image_path = models.CharField(max_length=255, blank=True)
-    back_image_path = models.CharField(max_length=255, blank=True)
+    front_image = models.ImageField(
+        upload_to='clothing/',
+        blank=True,
+    )
+    back_image = models.ImageField(
+        upload_to='clothing/',
+        blank=True,
+    )
     price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
