@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{% static 'frontend/css/login.css' %}">
-    <link rel="stylesheet" href="{% static 'frontend/css/login.css' %}">
+    
 </head>
 
 <body>
@@ -41,10 +41,26 @@
                 >
             </div>
 
+            {% if error %}
+                <div class="login-notification">
+                    {{ error }}
+                </div>
+            {% endif %}
+
             <button type="submit">Login</button>
+
         </form>
 
         <a href="#">Create an Account!</a>
     </main>
+<script>
+    const notification = document.querySelector('.login-notification');
+
+    if (notification) {
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    }
+</script>
 </body>
 </html>

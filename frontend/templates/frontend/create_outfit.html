@@ -1,0 +1,126 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Fitfolio | Create an Outfit</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'frontend/css/create_outfit.css' %}">
+</head>
+
+<body>
+
+    <main class="outfit-container">
+
+        <header class="outfit-header">
+            <h1>FITFOLIO</h1>
+            <h2>Create an Outfit</h2>
+            <p>Mix and match pieces from your wardrobe ✨</p>
+        </header>
+
+
+        <section class="outfit-builder">
+
+            <!-- LEFT SIDE: WARDROBE -->
+            <div class="wardrobe-panel">
+
+                <h3>Your Wardrobe</h3>
+
+                <div class="category-buttons">
+                    <button class="category active">All</button>
+                    <button class="category">Tops</button>
+                    <button class="category">Bottoms</button>
+                    <button class="category">Dresses</button>
+                    <button class="category">Shoes</button>
+                </div>
+
+                <div class="clothing-options">
+
+                    <button class="clothing-item">
+                        <span>👚</span>
+                        <p>Pink Top</p>
+                    </button>
+
+                    <button class="clothing-item">
+                        <span>👖</span>
+                        <p>Blue Jeans</p>
+                    </button>
+
+                    <button class="clothing-item">
+                        <span>👗</span>
+                        <p>Dress</p>
+                    </button>
+
+                    <button class="clothing-item">
+                        <span>👟</span>
+                        <p>Sneakers</p>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- CENTER: OUTFIT PREVIEW -->
+            <div class="outfit-preview">
+
+                <h3>Your Outfit</h3>
+
+                <div class="preview-area">
+                    <div class="preview-placeholder">
+                        <span>✨</span>
+                        <p>Select pieces from your wardrobe</p>
+                    </div>
+                </div>
+
+                <button class="save-outfit">
+                    Save Outfit
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- BOTTOM NAVIGATION -->
+
+    <nav class="bottom-nav">
+
+        <a href="{% url 'home' %}" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Home</span>
+        </a>
+
+        <a href="{% url 'create_outfit' %}" class="nav-item active">
+            <span class="nav-icon">👗</span>
+            <span class="nav-label">Create an Outfit</span>
+        </a>
+
+        <a href="#" class="add-button">
+            <span>+</span>
+        </a>
+
+        <a href="{% url 'wardrobe' %}" class="nav-item">
+            <span class="nav-icon">👚</span>
+            <span class="nav-label">My Wardrobe</span>
+        </a>
+
+        <a href="#" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span class="nav-label">My Community</span>
+        </a>
+
+    </nav>
+
+</body>
+</html>

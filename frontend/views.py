@@ -1,6 +1,9 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -26,6 +29,22 @@ def login_view(request):
             
         return render(request,
         'frontend/login.html',
-        {'error': 'Invalid credentials'})
+        {'error': 'Wrong email or password. Please try again.'})
             
     return render(request, 'frontend/login.html')
+
+@login_required(login_url='login')
+def home_view(request):
+    return render(request, 'frontend/home.html')
+
+@login_required(login_url='login')
+def wardrobe_view(request):
+    return render(request, 'frontend/wardrobe.html')
+
+@login_required(login_url='login')
+def create_outfit_view(request):
+    return render(request, 'frontend/create_outfit.html')
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
