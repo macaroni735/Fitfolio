@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitfolio | Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'frontend/css/home.css' %}">
+</head>
+<body>
+    <main class="home-container">
+
+    <header class="home-header">
+        <h1>FITFOLIO</h1>
+
+        <div class="welcome-message">
+            <h2>Welcome!</h2>
+            <p>What are we wearing today?</p>
+        </div>
+    </header>
+    <section class="dashboard-content">
+
+    <div class="weather-card">
+        <span class="weather-icon">☀️</span>
+        <h3>Today's Weather</h3>
+        <p class="temperature">72°F</p>
+        <p>Sunny</p>
+    </div>
+
+    <div class="outfit-display">
+        <img
+            src="{% static 'frontend/images/mannequin-stage.png' %}"
+            alt="Fitfolio dressing mannequin"
+            class="mannequin-stage"
+        >
+    </div>
+
+    <div class="outfit-card">
+    <span class="outfit-icon">✨</span>
+    <h3>Today's Outfit</h3>
+    <p>No outfit selected yet</p>
+    <button type="button">Create an Outfit</button>
+</div>
+
+</section>
+
+</main>
+
+<nav class="bottom-nav">
+
+    <a href="#" class="nav-item active">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
+    </a>
+
+    <a href="{% url 'create_outfit' %}" class="nav-item">
+        <span class="nav-icon">👕</span>
+        <span>Create an Outfit</span>
+    </a>
+
+    <a href="#" class="add-button">
+        <span>+</span>
+    </a>
+
+    <a href="{% url 'wardrobe' %}" class="nav-item">
+        <span class="nav-icon">👗</span>
+        <span>My Wardrobe</span>
+    </a>
+
+    <a href="#" class="nav-item">
+        <span class="nav-icon">👥</span>
+        <span>Your Community</span>
+    </a>
+
+</nav>
+
+</body>
+</html>

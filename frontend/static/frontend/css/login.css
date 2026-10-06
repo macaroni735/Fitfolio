@@ -105,3 +105,21 @@ main > a:hover{
 
 
 }
+
+.login-notification {
+    position: fixed;
+    top: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    background-color: #ffffff;
+    color: #b3261e;
+
+    padding: 14px 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 1000;
+}

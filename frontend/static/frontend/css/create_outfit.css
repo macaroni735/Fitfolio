@@ -1,0 +1,403 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: #9EC0EB;
+    font-family: 'Poppins', sans-serif;
+    color: #000000;
+}
+
+
+/* PAGE */
+
+.outfit-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 50px 35px 140px;
+}
+
+
+/* HEADER */
+
+.outfit-header {
+    text-align: center;
+}
+
+.outfit-header h1 {
+    margin: 0;
+    font-size: 42px;
+    font-weight: 600;
+    letter-spacing: 2px;
+}
+
+.outfit-header h2 {
+    margin: 30px 0 0;
+    font-size: 25px;
+    font-weight: 600;
+}
+
+.outfit-header p {
+    margin: 5px 0 0;
+    font-size: 14px;
+}
+
+
+/* MAIN BUILDER */
+
+.outfit-builder {
+    margin-top: 35px;
+
+    display: grid;
+    grid-template-columns: 280px 380px 280px;
+    justify-content: center;
+    align-items: stretch;
+
+    gap: 25px;
+}
+
+
+/* PANELS */
+
+.wardrobe-panel,
+.outfit-preview,
+.selected-panel {
+    background-color: rgba(255, 255, 255, 0.50);
+
+    border-radius: 22px;
+    padding: 22px;
+
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.10);
+}
+
+.wardrobe-panel h3,
+.outfit-preview h3,
+.selected-panel h3 {
+    margin: 0 0 18px;
+    text-align: center;
+    font-size: 17px;
+}
+
+
+/* CATEGORY BUTTONS */
+
+.category-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    gap: 7px;
+    margin-bottom: 20px;
+}
+
+.category {
+    padding: 7px 12px;
+
+    border: none;
+    border-radius: 18px;
+
+    background-color: rgba(255, 255, 255, 0.65);
+
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition: transform 0.2s ease,
+                box-shadow 0.2s ease;
+}
+
+.category:hover {
+    transform: translateY(-3px);
+
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.category.active {
+    background-color: #F1B8D9;
+}
+
+
+/* CLOTHING OPTIONS */
+
+.clothing-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.clothing-item {
+    min-height: 110px;
+
+    border: none;
+    border-radius: 15px;
+
+    background-color: rgba(255, 255, 255, 0.60);
+
+    font-family: 'Poppins', sans-serif;
+
+    cursor: pointer;
+
+    transition: transform 0.2s ease,
+                box-shadow 0.2s ease,
+                background-color 0.2s ease;
+}
+
+.clothing-item span {
+    display: block;
+    font-size: 42px;
+}
+
+.clothing-item p {
+    margin: 5px 0 0;
+    font-size: 11px;
+}
+
+.clothing-item:hover {
+    transform: translateY(-5px) scale(1.03);
+
+    background-color: #ffffff;
+
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.13);
+}
+
+
+/* OUTFIT PREVIEW */
+
+.outfit-preview {
+    text-align: center;
+}
+
+.preview-stage {
+    min-height: 310px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    background-color: rgba(255, 255, 255, 0.45);
+
+    border-radius: 18px;
+
+    padding: 20px;
+}
+
+.preview-placeholder {
+    font-size: 110px;
+}
+
+.preview-stage p {
+    margin: 15px 0 0;
+
+    font-size: 12px;
+    color: #555555;
+}
+
+
+/* OUTFIT NAME */
+
+.outfit-name {
+    width: 100%;
+
+    margin-top: 15px;
+    padding: 11px 14px;
+
+    border: none;
+    outline: none;
+
+    border-radius: 12px;
+
+    background-color: rgba(255, 255, 255, 0.70);
+
+    font-family: 'Poppins', sans-serif;
+}
+
+
+/* SAVE BUTTON */
+
+.save-outfit {
+    width: 100%;
+
+    margin-top: 12px;
+    padding: 11px;
+
+    border: none;
+    border-radius: 12px;
+
+    background-color: #F1B8D9;
+
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: transform 0.2s ease,
+                box-shadow 0.2s ease;
+}
+
+.save-outfit:hover {
+    transform: translateY(-3px) scale(1.02);
+
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
+}
+
+
+/* SELECTED ITEMS */
+
+.selected-empty {
+    min-height: 280px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+
+    padding: 20px;
+
+    background-color: rgba(255, 255, 255, 0.35);
+
+    border-radius: 16px;
+}
+
+.selected-empty span {
+    font-size: 45px;
+}
+
+.selected-empty p {
+    max-width: 180px;
+
+    font-size: 12px;
+    color: #555555;
+}
+
+
+/* BOTTOM NAV */
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+    height: 85px;
+
+    background-color: #F1B8D9;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+
+    padding: 0 25px;
+
+    z-index: 1000;
+
+    box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.12);
+}
+
+.nav-item {
+    width: 100px;
+    height: 75px;
+    flex: 0 0 100px;
+
+    color: #000000;
+    text-decoration: none;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 3px;
+
+    border-radius: 15px;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.35);
+
+    transform: translateY(-5px) scale(1.05);
+
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.10);
+}
+
+.nav-icon {
+    font-size: 25px;
+    line-height: 1;
+}
+
+.nav-label {
+    font-size: 12px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.nav-item.active {
+    font-weight: 600;
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+
+/* ADD BUTTON */
+
+.add-button {
+    width: 65px;
+    height: 65px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background-color: #A8D5A2;
+    color: #000000;
+
+    border-radius: 50%;
+    text-decoration: none;
+
+    font-size: 38px;
+
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+
+    transform: translateY(-15px);
+
+    transition: transform 0.2s ease,
+                box-shadow 0.2s ease;
+}
+
+.add-button:hover {
+    transform: translateY(-22px) scale(1.10);
+
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 1000px) {
+
+    .outfit-builder {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .wardrobe-panel,
+    .outfit-preview,
+    .selected-panel {
+        width: 100%;
+    }
+}

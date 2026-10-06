@@ -1,0 +1,106 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Fitfolio | My Wardrobe</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'frontend/css/wardrobe.css' %}">
+</head>
+
+<body>
+
+    <main class="wardrobe-container">
+
+        <header class="wardrobe-header">
+            <h1>FITFOLIO</h1>
+            <h2>My Wardrobe</h2>
+            <p>Browse and organize your closet</p>
+        </header>
+
+        <section class="wardrobe-tools">
+
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" placeholder="Search your wardrobe...">
+            </div>
+
+            <div class="category-buttons">
+                <button class="category active">All</button>
+                <button class="category">Tops</button>
+                <button class="category">Bottoms</button>
+                <button class="category">Dresses</button>
+                <button class="category">Shoes</button>
+                <button class="category">Accessories</button>
+            </div>
+
+        </section>
+
+        <section class="wardrobe-grid">
+
+            <div class="clothing-card">
+                <div class="clothing-image">👚</div>
+                <h3>Pink Top</h3>
+                <p>Tops</p>
+            </div>
+
+            <div class="clothing-card">
+                <div class="clothing-image">👖</div>
+                <h3>Blue Jeans</h3>
+                <p>Bottoms</p>
+            </div>
+
+            <div class="clothing-card">
+                <div class="clothing-image">👗</div>
+                <h3>Summer Dress</h3>
+                <p>Dresses</p>
+            </div>
+
+            <div class="clothing-card">
+                <div class="clothing-image">👟</div>
+                <h3>White Sneakers</h3>
+                <p>Shoes</p>
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <nav class="bottom-nav">
+
+        <a href="{% url 'home' %}" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Home</span>
+        </a>
+
+        <a href="{% url 'create_outfit' %}" class="nav-item">
+            <span class="nav-icon">👗</span>
+            <span class="nav-label">Create an Outfit</span>
+        </a>
+
+        <a href="#" class="add-button">
+            <span>+</span>
+        </a>
+
+        <a href="{% url 'wardrobe' %}" class="nav-item active">
+            <span class="nav-icon">👚</span>
+            <span class="nav-label">My Wardrobe</span>
+        </a>
+
+        <a href="#" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span class="nav-label">My Community</span>
+        </a>
+
+    </nav>
+
+</body>
+</html>
