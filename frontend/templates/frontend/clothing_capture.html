@@ -1,0 +1,50 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitfolio | Clothing Capture</title>
+    <link rel="stylesheet" href="{% static 'frontend/css/clothing_capture.css' %}">
+</head>
+<body>
+    <main class="capture-container">
+        <a href="{% url 'wardrobe' %}" class="back-link">← My Wardrobe</a>
+
+        <header>
+            <h1>Clothing Capture Studio</h1>
+            <p>Capture or upload a clothing item to get started.</p>
+        </header>
+
+        <div class="camera-frame">
+            <video id="camera" autoplay playsinline hidden></video>
+            <img id="preview" alt="Clothing photo preview" hidden>
+            <div id="placeholder" class="placeholder">
+                Your camera preview will appear here.
+            </div>
+        </div>
+
+        <canvas id="canvas" hidden></canvas>
+
+        <p id="status" role="status">Choose camera or upload a photo.</p>
+
+        <div class="capture-controls">
+            <button id="start-camera" type="button">Open Camera</button>
+            <button id="take-photo" type="button" disabled>Take Photo</button>
+            <button id="retake" type="button" hidden>Retake</button>
+
+            <label class="upload-button" for="photo-upload">
+                Upload Photo
+            </label>
+            <input id="photo-upload" type="file" accept="image/*" hidden>
+        </div>
+
+        <p class="next-step">
+            Next: remove the background, clean up the image, and align the item.
+        </p>
+    </main>
+
+    <script src="{% static 'frontend/js/clothing_capture.js' %}"></script>
+</body>
+</html>

@@ -42,6 +42,10 @@ def wardrobe_view(request):
     return render(request, 'frontend/wardrobe.html')
 
 @login_required(login_url='login')
+def clothing_capture_view(request):
+    return render(request, 'frontend/clothing_capture.html')
+
+@login_required(login_url='login')
 def create_outfit_view(request):
     return render(request, 'frontend/create_outfit.html')
 
