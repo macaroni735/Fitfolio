@@ -15,6 +15,10 @@ Application Setup:
         bash:
         pip install -r requirements.txt
     
+    Generate .env file
+        bash:
+        python keygen.py
+
     Generate the database
         bash:
         python manage.py migrate
