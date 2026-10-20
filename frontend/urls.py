@@ -4,6 +4,7 @@ from . import views
 from clothing.views import process_clothing_image
 
 urlpatterns = [
+    path('', views.landing_view, name='landing'),
     path('login/', views.login_view, name='login'),
     path('home/', views.home_view, name='home'),
     path('logout/', views.logout_view, name='logout'),

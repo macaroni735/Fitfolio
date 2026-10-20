@@ -50,29 +50,28 @@
                     <button class="category">Shoes</button>
                 </div>
 
-                <div class="clothing-options">
+                
+<div class="clothing-options">
+    {% for item in clothing_items %}
+        <button type="button" class="clothing-item" data-item-id="{{ item.id }}" data-category="{{ item.category }}">
+            {% if item.processed_front_image %}
+                <img src="{{ item.processed_front_image.url }}" alt="{{ item.display_name }}">
+            {% elif item.original_front_image %}
+                <img src="{{ item.original_front_image.url }}" alt="{{ item.display_name }}">
+            {% else %}
+                <span>👚</span>
+            {% endif %}
+            <p>{{ item.display_name }}</p>
+        </button>
+    {% empty %}
+        <div class="wardrobe-empty">
+            <span>👗</span>
+            <p>Your wardrobe is empty!</p>
+            <p>Add some clothing pieces to start creating outfits.</p>
+        </div>
+    {% endfor %}
+</div>
 
-                    <button class="clothing-item">
-                        <span>👚</span>
-                        <p>Pink Top</p>
-                    </button>
-
-                    <button class="clothing-item">
-                        <span>👖</span>
-                        <p>Blue Jeans</p>
-                    </button>
-
-                    <button class="clothing-item">
-                        <span>👗</span>
-                        <p>Dress</p>
-                    </button>
-
-                    <button class="clothing-item">
-                        <span>👟</span>
-                        <p>Sneakers</p>
-                    </button>
-
-                </div>
 
             </div>
 
@@ -82,25 +81,58 @@
 
                 <h3>Your Outfit</h3>
 
-                <div class="preview-area">
-                    <div class="preview-placeholder">
-                        <span>✨</span>
-                        <p>Select pieces from your wardrobe</p>
-                    </div>
-                </div>
+                
+<div class="preview-area" id="outfit-preview">
+    <div class="preview-placeholder" id="preview-placeholder">
+        <span>✨</span>
+        <p>Select pieces from your wardrobe</p>
+    </div>
+</div>
+
 
                 <button class="save-outfit">
                     Save Outfit
                 </button>
 
             </div>
+            <div class="saved-outfits-panel">
+    <div class="saved-outfits-header">
+        <h3>My Saved Outfits ♡</h3>
+        <p>Your favorite looks, all in one place!</p>
+    </div>
+
+    
+<div class="saved-outfits-list">
+    {% for outfit in saved_outfits %}
+        <div class="saved-outfit-card">
+            <div class="saved-outfit-icon">
+                <i class="fa-solid fa-shirt"></i>
+            </div>
+
+            <div class="saved-outfit-info">
+                <h4>{{ outfit.display_name }}</h4>
+                <p>{{ outfit.created_at|date:"M d, Y" }}</p>
+                <span>{{ outfit.clothing.count }} clothing items</span>
+            </div>
+        </div>
+    {% empty %}
+        <div class="saved-outfits-empty">
+            <i class="fa-regular fa-heart"></i>
+            <h4>No saved outfits yet!</h4>
+            <p>Create your first outfit and save it here.</p>
+        </div>
+    {% endfor %}
+</div>
+
+</div>
+
 
         </section>
 
     </main>
 
 
-    <!-- BOTTOM NAVIGATION -->
+    
 
     <nav class="bottom-nav">
 
@@ -129,6 +161,6 @@
         </a>
 
     </nav>
-
+<script src="{% static 'frontend/js/create_outfit.js' %}" defer></script>
 </body>
 </html>

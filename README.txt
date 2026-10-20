@@ -31,7 +31,7 @@ Create an admin account:
 
 Useful URLs
     Admin Panel:
-    http://127.0.0.1:8000/admin/
+    http://127.0.0.1:8001/admin/
 
     Login Page:
-    http://127.0.0.1:8000/login/
+    http://127.0.0.1:8001/login/
