@@ -1,0 +1,140 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | Fitfolio</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'frontend/css/register.css' %}">
+</head>
+<body>
+
+    <div class="register-container">
+        <div class="register-card">
+
+            <h1>Join Fitfolio</h1>
+            <p class="subtitle">Your dream wardrobe starts here ♡</p>
+
+            
+<form method="POST">
+    {% csrf_token %}
+
+    <!-- Username -->
+    <div class="form-group">
+        <label for="username">Username</label>
+
+        <div class="input-wrapper">
+            <i class="fa-regular fa-user"></i>
+            <input type="text"
+                   id="username"
+                   name="username"
+                   placeholder="Choose a username"
+                   value="{{ form.username.value|default_if_none:'' }}"
+                   autocomplete="username"
+                   required>
+        </div>
+
+        {% for error in form.username.errors %}
+            <p class="field-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+
+    <!-- Email Address -->
+    <div class="form-group">
+        <label for="email">Email Address</label>
+
+        <div class="input-wrapper">
+            <i class="fa-regular fa-envelope"></i>
+            <input type="email"
+                   id="email"
+                   name="email"
+                   placeholder="Enter your email"
+                   value="{{ request.POST.email|default:'' }}"
+                   autocomplete="email"
+                   required>
+        </div>
+
+        {% for error in form.email.errors %}
+            <p class="field-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+
+    <!-- Password -->
+    <div class="form-group">
+        <label for="password1">Password</label>
+
+        <div class="input-wrapper">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password"
+                   id="password1"
+                   name="password1"
+                   placeholder="Create a password"
+                   autocomplete="new-password"
+                   required>
+        </div>
+
+        {% for error in form.password1.errors %}
+            <p class="field-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="form-group">
+        <label for="password2">Confirm Password</label>
+
+        <div class="input-wrapper">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password"
+                   id="password2"
+                   name="password2"
+                   placeholder="Confirm your password"
+                   autocomplete="new-password"
+                   required>
+        </div>
+
+        {% for error in form.password2.errors %}
+            <p class="field-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+
+    <!-- General Form Errors -->
+    {% for error in form.non_field_errors %}
+        <p class="field-error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            {{ error }}
+        </p>
+    {% endfor %}
+
+    <!-- Create Account Button -->
+    <button type="submit" class="register-button">
+        Create Account ♡
+    </button>
+
+</form>
+
+
+            <p class="login-link">
+                Already have an account?
+                <a href="{% url 'login' %}">Log In</a>
+            </p>
+
+        </div>
+    </div>
+
+</body>
+</html>

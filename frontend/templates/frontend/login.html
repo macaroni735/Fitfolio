@@ -51,8 +51,10 @@
             <button type="submit">Login</button>
 
         </form>
-
-        <a href="#">Create an Account!</a>
+        <div class="login-links">
+            <a href="{% url 'register' %}">Create an Account</a>
+            <a href="{% url 'password_reset' %}">Forgot Password?</a>
+        </div>
     </main>
 <script>
     const notification = document.querySelector('.login-notification');

@@ -10,18 +10,12 @@ body {
     color: #000000;
 }
 
-
-/* PAGE */
-
 .outfit-container {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 50px 35px 140px;
 }
-
-
-/* HEADER */
 
 .outfit-header {
     text-align: center;
@@ -45,9 +39,6 @@ body {
     font-size: 14px;
 }
 
-
-/* MAIN BUILDER */
-
 .outfit-builder {
     margin-top: 35px;
 
@@ -58,9 +49,6 @@ body {
 
     gap: 25px;
 }
-
-
-/* PANELS */
 
 .wardrobe-panel,
 .outfit-preview,
@@ -80,9 +68,6 @@ body {
     text-align: center;
     font-size: 17px;
 }
-
-
-/* CATEGORY BUTTONS */
 
 .category-buttons {
     display: flex;
@@ -120,9 +105,6 @@ body {
 .category.active {
     background-color: #F1B8D9;
 }
-
-
-/* CLOTHING OPTIONS */
 
 .clothing-options {
     display: grid;
@@ -165,9 +147,6 @@ body {
     box-shadow: 0 5px 12px rgba(0, 0, 0, 0.13);
 }
 
-
-/* OUTFIT PREVIEW */
-
 .outfit-preview {
     text-align: center;
 }
@@ -198,9 +177,6 @@ body {
     color: #555555;
 }
 
-
-/* OUTFIT NAME */
-
 .outfit-name {
     width: 100%;
 
@@ -216,9 +192,6 @@ body {
 
     font-family: 'Poppins', sans-serif;
 }
-
-
-/* SAVE BUTTON */
 
 .save-outfit {
     width: 100%;
@@ -245,9 +218,6 @@ body {
 
     box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
 }
-
-
-/* SELECTED ITEMS */
 
 .selected-empty {
     min-height: 280px;
@@ -276,9 +246,6 @@ body {
     font-size: 12px;
     color: #555555;
 }
-
-
-/* BOTTOM NAV */
 
 .bottom-nav {
     position: fixed;
@@ -349,7 +316,6 @@ body {
 }
 
 
-/* ADD BUTTON */
 
 .add-button {
     width: 65px;
@@ -383,9 +349,6 @@ body {
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
 }
 
-
-/* RESPONSIVE */
-
 @media (max-width: 1000px) {
 
     .outfit-builder {
@@ -399,5 +362,50 @@ body {
     .outfit-preview,
     .selected-panel {
         width: 100%;
+    }
+}
+
+.logout-form {
+    position: fixed;
+    top: 85px;
+    right: 35px;
+    left: auto;
+    width: auto;
+    margin: 0;
+    z-index: 1000;
+}
+
+.logout-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    background: #F1B8D9;
+    color: #4B4560;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(126, 73, 108, 0.18);
+    transition: all 0.2s ease;
+}
+
+.logout-button:hover {
+    background: #E7A2CA;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 480px) {
+    .logout-form {
+        top: 70px;
+        right: 15px;
+    }
+
+    .logout-button {
+        padding: 10px 16px;
+        font-size: 12px;
     }
 }
