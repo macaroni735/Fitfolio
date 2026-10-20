@@ -1,0 +1,108 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Fitfolio is your virtual closet and outfit planner. Organize your wardrobe, create outfits, and discover fashion inspiration.">
+    <meta name="keywords" content="Fitfolio, virtual closet, digital wardrobe, outfit planner, wardrobe organizer, fashion community">
+    <meta name="robots" content="index, follow">
+
+    <title>Fitfolio | Your Virtual Closet & Outfit Planner</title>
+
+    <link rel="stylesheet" href="{% static 'frontend/css/landing.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <header class="navbar">
+        <a href="{% url 'landing' %}" class="logo">Fitfolio<span>♡</span></a>
+
+        <nav class="nav-links">
+            <a href="#about">About Us</a>
+            <a href="#features">Features</a>
+            <a href="{% url 'login' %}" class="login-button">Log In</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <p class="eyebrow">YOUR STYLE, YOUR WAY</p>
+                <h1>Your closet, <span>reimagined.</span></h1>
+                <p class="hero-description">
+                    Say hello to Fitfolio! Your personal digital wardrobe
+                    where organizing clothes, creating outfits, and finding
+                    your style is easier than ever.
+                </p>
+
+                <div class="hero-buttons">
+                    <a href="{% url 'register' %}" class="primary-button">Get Started <i class="fa-solid fa-arrow-right"></i></a>
+                    <a href="#about" class="secondary-button">Learn More</a>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="fashion-card">
+                    <div class="fashion-icon"><i class="fa-solid fa-shirt"></i></div>
+                    <h2>Welcome to your wardrobe!</h2>
+                    <p>Mix, match & make it yours ♡</p>
+                    <div class="fashion-icons">
+                        <i class="fa-solid fa-shirt"></i>
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        <i class="fa-solid fa-shoe-prints"></i>
+                        <i class="fa-solid fa-heart"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="about-section" id="about">
+            <p class="section-label">GET TO KNOW US</p>
+            <h2>What is Fitfolio?</h2>
+            <p>
+                Fitfolio is a virtual wardrobe designed to make getting dressed
+                fun and stress-free. Keep your favorite clothing pieces in one
+                place, put together outfits, and discover new ways to express
+                yourself through fashion.
+            </p>
+        </section>
+
+        <section class="features-section" id="features">
+            <p class="section-label">MADE FOR YOUR STYLE</p>
+            <h2>Everything your closet needs ♡</h2>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-shirt"></i></div>
+                    <h3>My Wardrobe</h3>
+                    <p>Organize your favorite clothing pieces in your own digital closet.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                    <h3>Create Outfits</h3>
+                    <p>Mix and match your clothes to create looks you'll love.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-users"></i></div>
+                    <h3>Our Community</h3>
+                    <p>Share your style, explore outfits, and get inspired by others.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <h2>Ready to find your style?</h2>
+            <p>Your dream digital wardrobe is just a click away.</p>
+            <a href="{% url 'register' %}" class="primary-button">Create Your Account <i class="fa-solid fa-heart"></i></a>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 Fitfolio. Made with ♡ for fashion lovers.</p>
+    </footer>
+</body>
+</html>

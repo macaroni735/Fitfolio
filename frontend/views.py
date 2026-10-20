@@ -4,6 +4,8 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
+from outfits.models import Outfit
+from clothing.models import Clothing
 
 def login_view(request):
     if request.method == 'POST':
@@ -43,7 +45,18 @@ def wardrobe_view(request):
 
 @login_required(login_url='login')
 def create_outfit_view(request):
-    return render(request, 'frontend/create_outfit.html')
+    saved_outfits = Outfit.objects.filter(
+        user=request.user
+    ).order_by('-created_at')
+
+    clothing_items = Clothing.objects.filter(
+        user=request.user
+    ).order_by('-created_at')
+
+    return render(request, 'frontend/create_outfit.html', {
+        'saved_outfits': saved_outfits,
+        'clothing_items': clothing_items
+    })
 
 def logout_view(request):
     logout(request)
@@ -62,3 +75,6 @@ def register_view(request):
         form = UserCreationForm()
 
     return render(request, 'frontend/register.html', {'form': form})
+
+def landing_view(request):
+    return render(request, 'frontend/landing.html')
