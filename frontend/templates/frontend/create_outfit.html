@@ -53,8 +53,10 @@
                 
 <div class="clothing-options">
     {% for item in clothing_items %}
-        <button type="button" class="clothing-item" data-item-id="{{ item.id }}" data-category="{{ item.category }}">
-            {% if item.processed_front_image %}
+        <button type="button" class="clothing-item" data-item-id="{{ item.id }}" data-category="{{ item.article_type }}">
+            {% if item.final_front_image %}
+                <img src="{{ item.final_front_image.url }}" alt="{{ item.display_name }}">
+            {% elif item.processed_front_image %}
                 <img src="{{ item.processed_front_image.url }}" alt="{{ item.display_name }}">
             {% elif item.original_front_image %}
                 <img src="{{ item.original_front_image.url }}" alt="{{ item.display_name }}">

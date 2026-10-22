@@ -6,12 +6,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fitfolio | Clothing Capture</title>
+    <link rel="stylesheet" href="{% static 'frontend/css/mannequin.css' %}">
     <link rel="stylesheet" href="{% static 'frontend/css/clothing_capture.css' %}">
 </head>
 <body>
     <main 
         class="capture-container"
         data-process-url="{% url 'process_clothing_image' %}"
+        data-create-url="{% url 'create_clothing' %}"
     >
 
         <form id="csrf-form" hidden>
@@ -25,11 +27,12 @@
         </header>
 
         <!-- Image capture section -->
-        <div class="camera-frame" id="camera-frame" hidden>
+        <div class="mannequin-frame camera-frame" id="camera-frame" hidden>
 
             <video id="camera" autoplay playsinline hidden></video>
             <img
             id="mannequin-guide"
+            class="mannequin-guide"
             src="{% static 'frontend/images/Default Guide.png' %}"
             alt=""
             aria-hidden="true"
@@ -75,15 +78,213 @@
                         alt="Clothing image"
                     >
                 </div>
-        
-                <p id="editor-success" hidden>Background removed!</p>
             </div>
         
             <div class="editor-controls">
                 <button id="back-to-capture" type="button">Back</button>
-                <button id="continue-after-processing" type="button" hidden>Next</button>
                 <button id="retry-processing" type="button" hidden>Try Again</button>
             </div>
+        </section>
+
+        <!-- Manual cleanup section -->
+        <section id="cleanup-step" hidden>
+            <p id="cleanup-status" role="status">
+                Erase any leftover background or extra details.
+            </p>
+
+            <div class="editor-image-frame" id="cleanup-frame">
+                <canvas id="cleanup-canvas" aria-label="Clothing image editor"></canvas>
+                <div id="brush-preview" hidden></div>
+            </div>
+
+            <div class="cleanup-tools">
+                <label for="brush-size">Brush size</label>
+                <input id="brush-size" type="range" min="8" max="80" value="24">
+                <span id="brush-size-swatch" class="brush-size-swatch" aria-hidden="true"></span>
+            </div>
+
+            <div class="editor-controls">
+                <div class="editor-actions">
+                    <button id="undo-cleanup" type="button">Undo</button>
+                    <button id="reset-cleanup" type="button">Reset</button>
+                </div>
+
+                <div class="editor-nav">
+                    <button id="back-to-processed" type="button">Back</button>
+                    <button id="continue-after-cleanup" type="button">Next</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Alignment section -->
+        <section id="position-step" hidden>
+            <p id="position-status" role="status">
+                Line the clothing up with the mannequin. Drag to move, then adjust rotation and scale.
+            </p>
+
+            <div class="mannequin-frame position-frame" id="position-frame">
+                <img
+                    class="mannequin-guide"
+                    src="{% static 'frontend/images/Default Guide.png' %}"
+                    alt=""
+                    aria-hidden="true"
+                >
+                <div class="mannequin-item-slot" id="position-slot">
+                    <img
+                        id="position-image"
+                        class="placed-clothing"
+                        alt="Clothing image to position"
+                        draggable="false"
+                    >
+                </div>
+            </div>
+
+            <div class="position-tools">
+                <label class="position-slider">
+                    <span>Rotation <span id="rotation-value">0°</span></span>
+                    <input id="position-rotation" type="range" min="-180" max="180" value="0">
+                </label>
+                <label class="position-slider">
+                    <span>Scale <span id="scale-value">100%</span></span>
+                    <input id="position-scale" type="range" min="20" max="250" value="100">
+                </label>
+            </div>
+
+            <div class="editor-controls">
+                <div class="editor-actions">
+                    <button id="reset-position" type="button">Reset</button>
+                </div>
+
+                <div class="editor-nav">
+                    <button id="back-to-cleanup" type="button">Back</button>
+                    <button id="continue-after-position" type="button">Next</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Form section -->
+        <section id="details-step" hidden>
+            <div class="details-preview-row">
+                <div class="mannequin-frame details-preview-frame">
+                    <img
+                        class="mannequin-guide"
+                        src="{% static 'frontend/images/Default Guide.png' %}"
+                        alt=""
+                        aria-hidden="true"
+                    >
+                    <div class="mannequin-item-slot" id="details-preview-slot">
+                        <img
+                            id="details-preview-image"
+                            class="placed-clothing"
+                            alt="Clothing placement preview"
+                            draggable="false"
+                        >
+                    </div>
+                </div>
+                <button id="edit-position" type="button">Edit</button>
+            </div>
+
+            <form id="clothing-details-form">
+                <label class="details-field">
+                    <span>Name</span>
+                    <input id="clothing-name" name="name" type="text" maxlength="100">
+                </label>
+
+                <label class="details-field">
+                    <span>Description</span>
+                    <textarea id="clothing-description" name="description" rows="3"></textarea>
+                </label>
+
+                <label class="details-field">
+                    <span>Category</span>
+                    <select id="clothing-category" name="category">
+                        <option value="">Select a category</option>
+                        <option value="womens">Women's</option>
+                        <option value="mens">Men's</option>
+                        <option value="unisex">Unisex</option>
+                        <option value="kids">Kids</option>
+                    </select>
+                </label>
+
+                <label class="details-field">
+                    <span>Article Type</span>
+                    <select id="clothing-article-type" name="article_type">
+                        <option value="">Select an article type</option>
+                        <option value="tops">Tops</option>
+                        <option value="bottoms">Bottoms</option>
+                        <option value="dresses">Dresses</option>
+                        <option value="outerwear">Outerwear</option>
+                        <option value="shoes">Shoes</option>
+                        <option value="accessories">Accessories</option>
+                        <option value="other">Other</option>
+                    </select>
+                </label>
+
+                <label class="details-field">
+                    <span>Size</span>
+                    <input id="clothing-size" name="size" type="text" maxlength="20">
+                </label>
+
+                <div class="details-field">
+                    <label for="clothing-tags">Tags</label>
+                    <div class="tag-input" id="tag-editor">
+                        <div id="tag-list" class="tag-list"></div>
+                        <input
+                            id="clothing-tags"
+                            type="text"
+                            autocomplete="off"
+                            placeholder="Type a tag, then Enter"
+                        >
+                    </div>
+                </div>
+
+                <label class="details-field">
+                    <span>Count</span>
+                    <input id="clothing-count" name="count" type="number" min="0" step="1" value="1">
+                </label>
+
+                <label class="details-check">
+                    <input id="clothing-publish" name="publish" type="checkbox">
+                    <span>Publish</span>
+                </label>
+
+                <div id="publish-fields" hidden>
+                    <label class="details-check">
+                        <input id="clothing-anonymous" name="anonymous" type="checkbox">
+                        <span>Anonymous</span>
+                    </label>
+
+                    <label class="details-check">
+                        <input id="clothing-for-sale" name="for_sale" type="checkbox">
+                        <span>For Sale</span>
+                    </label>
+                </div>
+
+                <div id="sale-fields" hidden>
+                    <div class="details-field">
+                        <label for="clothing-price">Price</label>
+                        <div class="price-field">
+                            <span class="price-prefix" aria-hidden="true">$</span>
+                            <input
+                                id="clothing-price"
+                                name="price"
+                                type="number"
+                                min="0"
+                                step="1"
+                                value="0.00"
+                            >
+                        </div>
+                    </div>
+
+                    <label class="details-field">
+                        <span>Stock</span>
+                        <input id="clothing-stock" name="stock" type="number" min="0" step="1" value="1">
+                    </label>
+                </div>
+
+                <p id="details-error" role="alert" hidden></p>
+                <button id="create-clothing" type="button">Create</button>
+            </form>
         </section>
         
     </main>

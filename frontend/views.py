@@ -41,7 +41,13 @@ def home_view(request):
 
 @login_required(login_url='login')
 def wardrobe_view(request):
-    return render(request, 'frontend/wardrobe.html')
+    clothing_items = Clothing.objects.filter(
+        user=request.user
+    ).order_by('-created_at')
+
+    return render(request, 'frontend/wardrobe.html', {
+        'clothing_items': clothing_items,
+    })
 
 @login_required(login_url='login')
 def clothing_capture_view(request):
