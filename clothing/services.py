@@ -26,3 +26,8 @@ def _process_image(clothing, original_image, processed_field):
     )
 
     clothing.save(update_fields=[processed_field])
+
+def remove_background_from_upload(uploaded_file):
+    """Return a background-removed PNG from an uploaded image."""
+    image_data = uploaded_file.read()
+    return remove(image_data)

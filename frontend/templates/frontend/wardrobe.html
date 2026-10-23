@@ -52,31 +52,27 @@
         </section>
 
         <section class="wardrobe-grid">
-
-            <div class="clothing-card">
-                <div class="clothing-image">👚</div>
-                <h3>Pink Top</h3>
-                <p>Tops</p>
-            </div>
-
-            <div class="clothing-card">
-                <div class="clothing-image">👖</div>
-                <h3>Blue Jeans</h3>
-                <p>Bottoms</p>
-            </div>
-
-            <div class="clothing-card">
-                <div class="clothing-image">👗</div>
-                <h3>Summer Dress</h3>
-                <p>Dresses</p>
-            </div>
-
-            <div class="clothing-card">
-                <div class="clothing-image">👟</div>
-                <h3>White Sneakers</h3>
-                <p>Shoes</p>
-            </div>
-
+            {% for item in clothing_items %}
+                <div class="clothing-card">
+                    <div class="clothing-image">
+                        {% if item.final_front_image %}
+                            <img src="{{ item.final_front_image.url }}" alt="{{ item.display_name }}">
+                        {% elif item.processed_front_image %}
+                            <img src="{{ item.processed_front_image.url }}" alt="{{ item.display_name }}">
+                        {% elif item.original_front_image %}
+                            <img src="{{ item.original_front_image.url }}" alt="{{ item.display_name }}">
+                        {% else %}
+                            👚
+                        {% endif %}
+                    </div>
+                    <h3>{{ item.display_name }}</h3>
+                    <p>{{ item.article_type|title }}</p>
+                </div>
+            {% empty %}
+                <div class="wardrobe-empty">
+                    <p>Your wardrobe is empty. Add a clothing item to get started.</p>
+                </div>
+            {% endfor %}
         </section>
 
     </main>
@@ -94,7 +90,7 @@
             <span class="nav-label">Create an Outfit</span>
         </a>
 
-        <a href="#" class="add-button">
+        <a href="{% url 'clothing_capture' %}" class="add-button" aria-label="Add clothing">
             <span>+</span>
         </a>
 
