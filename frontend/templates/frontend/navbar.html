@@ -1,0 +1,26 @@
+
+<nav class="bottom-nav">
+    <a href="{% url 'home' %}" class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
+    </a>
+
+    <a href="{% url 'create_outfit' %}" class="nav-item {% if request.resolver_match.url_name == 'create_outfit' %}active{% endif %}">
+        <span class="nav-icon">👕</span>
+        <span class="nav-label">Create an Outfit</span>
+    </a>
+
+    <a href="{% url 'clothing_capture' %}" class="add-button" aria-label="Add clothing">
+        <span>+</span>
+    </a>
+
+    <a href="{% url 'wardrobe' %}" class="nav-item {% if request.resolver_match.url_name == 'wardrobe' %}active{% endif %}">
+        <span class="nav-icon">👗</span>
+        <span class="nav-label">My Wardrobe</span>
+    </a>
+
+    <a href="{% url 'community' %}" class="nav-item {% if request.resolver_match.url_name == 'community' %}active{% endif %}">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Your Community</span>
+    </a>
+</nav>

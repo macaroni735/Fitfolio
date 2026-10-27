@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
+    <link rel="stylesheet" href="{% static 'frontend/css/navbar.css' %}">
     <link rel="stylesheet" href="{% static 'frontend/css/wardrobe.css' %}">
 </head>
 
@@ -76,35 +76,6 @@
         </section>
 
     </main>
-
-
-    <nav class="bottom-nav">
-
-        <a href="{% url 'home' %}" class="nav-item">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">Home</span>
-        </a>
-
-        <a href="{% url 'create_outfit' %}" class="nav-item">
-            <span class="nav-icon">👗</span>
-            <span class="nav-label">Create an Outfit</span>
-        </a>
-
-        <a href="{% url 'clothing_capture' %}" class="add-button" aria-label="Add clothing">
-            <span>+</span>
-        </a>
-
-        <a href="{% url 'wardrobe' %}" class="nav-item active">
-            <span class="nav-icon">👚</span>
-            <span class="nav-label">My Wardrobe</span>
-        </a>
-
-        <a href="#" class="nav-item">
-            <span class="nav-icon">👥</span>
-            <span class="nav-label">My Community</span>
-        </a>
-
-    </nav>
-
+    {% include 'frontend/navbar.html' %}
 </body>
 </html>

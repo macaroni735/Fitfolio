@@ -37,7 +37,24 @@ def login_view(request):
 
 @login_required(login_url='login')
 def home_view(request):
-    return render(request, 'frontend/home.html')
+    clothing_items = Clothing.objects.filter(
+        user=request.user
+    ).order_by('-created_at')
+
+    wardrobe_data = [
+        {
+            'id': str(item.id),
+            'name': item.display_name,
+            'article_type': item.article_type or '',
+            'category': item.category or ''
+        }
+        for item in clothing_items
+    ]
+
+    return render(request, 'frontend/home.html', {
+        'clothing_items': clothing_items,
+        'wardrobe_data': wardrobe_data
+    })
 
 @login_required(login_url='login')
 def wardrobe_view(request):
@@ -88,3 +105,47 @@ def register_view(request):
 
 def landing_view(request):
     return render(request, 'frontend/landing.html')
+
+@login_required(login_url='login')
+def community_view(request):
+    public_clothing = Clothing.objects.filter(
+        publish=True
+    ).select_related('user')
+
+    article_type = request.GET.get('article_type', '')
+    category = request.GET.get('category', '')
+    tag = request.GET.get('tag', '').strip()
+    for_sale = request.GET.get('for_sale', '')
+
+    if article_type:
+        public_clothing = public_clothing.filter(
+            article_type=article_type
+        )
+
+    if category:
+        public_clothing = public_clothing.filter(
+            category=category
+        )
+
+    if tag:
+        public_clothing = public_clothing.filter(
+            tags__icontains=tag
+        )
+
+    if for_sale == 'true':
+        public_clothing = public_clothing.filter(
+            for_sale=True
+        )
+
+    public_clothing = public_clothing.order_by('-created_at')
+    public_outfits = Outfit.objects.filter(
+    publish=True
+).select_related('user').prefetch_related('clothing').order_by('-created_at')
+    return render(request, 'frontend/community.html', {
+        'public_clothing': public_clothing,
+        'public_outfits': public_outfits,
+        'selected_article_type': article_type,
+        'selected_category': category,
+        'selected_tag': tag,
+        'selected_for_sale': for_sale,
+    })

@@ -629,3 +629,111 @@ body {
     text-align: center;
     overflow-wrap: anywhere;
 }
+
+
+.outfit-save-section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    margin-top: 24px;
+    padding: 22px;
+    background: #FFF8FC;
+    border: 2px solid #F1B8D9;
+    border-radius: 20px;
+}
+
+.outfit-save-section > label:not(.outfit-publish-option) {
+    font-size: 14px;
+    font-weight: 600;
+    color: #45415C;
+    text-align: left;
+}
+
+#outfit-name,
+#outfit-description {
+    width: 100%;
+    padding: 13px 15px;
+    border: 1px solid #E8D8E5;
+    border-radius: 12px;
+    background: #FFFFFF;
+    color: #303047;
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+#outfit-description {
+    min-height: 85px;
+    resize: vertical;
+}
+
+#outfit-name:focus,
+#outfit-description:focus {
+    border-color: #D987B7;
+    box-shadow: 0 0 0 3px rgba(241, 184, 217, 0.25);
+}
+
+.outfit-publish-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: #FFFFFF;
+    border-radius: 12px;
+    font-size: 13px;
+    color: #45415C;
+    cursor: pointer;
+    text-align: left;
+}
+
+#outfit-publish {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: #D987B7;
+}
+
+.outfit-save-section .save-outfit {
+    width: 100%;
+    margin-top: 6px;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 14px;
+    background: #A8D5A2;
+    color: #303047;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.outfit-save-section .save-outfit:hover:not(:disabled) {
+    background: #95C98F;
+    transform: translateY(-2px);
+}
+
+.outfit-save-section .save-outfit:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+#save-outfit-status {
+    margin: 0;
+    font-size: 13px;
+    text-align: center;
+    color: #55516B;
+}
+
+#save-outfit-status:empty {
+    display: none;
+}
+
+@media (max-width: 650px) {
+    .outfit-save-section {
+        padding: 16px;
+        gap: 12px;
+    }
+}
+
