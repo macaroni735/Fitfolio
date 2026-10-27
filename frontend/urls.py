@@ -9,6 +9,7 @@ urlpatterns = [
     path('home/', views.home_view, name='home'),
     path('logout/', views.logout_view, name='logout'),
     path('wardrobe/', views.wardrobe_view, name='wardrobe'),
+    path('community/', views.community_view, name='community'),
     path('clothing-capture/', views.clothing_capture_view, name='clothing_capture'),
     path('clothing/process-image/', process_clothing_image, name='process_clothing_image'),
     path('clothing/create/', create_clothing, name='create_clothing'),

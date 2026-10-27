@@ -6,8 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fitfolio | Clothing Capture</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="{% static 'frontend/css/mannequin.css' %}">
     <link rel="stylesheet" href="{% static 'frontend/css/clothing_capture.css' %}">
+    <link rel="stylesheet" href="{% static 'frontend/css/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'frontend/css/clothing_redesign.css' %}">
 </head>
 <body>
     <main 
@@ -52,6 +56,7 @@
                 <button id="start-camera" type="button">Open Camera</button>
                 <button id="take-photo" type="button" hidden>Take Photo</button>
                 <button id="retake" type="button" hidden>Retake</button>
+                <button id="remove-photo" type="button" hidden> Remove Photo</button>
 
                 <label class="upload-button" for="photo-upload">
                     Upload Photo
@@ -290,5 +295,6 @@
     </main>
 
     <script src="{% static 'frontend/js/clothing_capture.js' %}"></script>
+{% include 'frontend/navbar.html' %}
 </body>
 </html>

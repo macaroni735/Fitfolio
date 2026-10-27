@@ -47,6 +47,108 @@ document.addEventListener('DOMContentLoaded', () => {
             previewArea.appendChild(previewItem);
         });
     }
+
+    const saveButton = document.getElementById('save-outfit');
+    const saveStatus = document.getElementById('save-outfit-status');
+
+    saveButton.addEventListener('click', async () => {
+        const name = document.getElementById('outfit-name').value.trim();
+        const description = document.getElementById('outfit-description').value.trim();
+        const publish = document.getElementById('outfit-publish').checked;
+
+        const clothingIds = Array.from(
+            document.querySelectorAll('.clothing-item.selected')
+        ).map(item => item.dataset.itemId);
+
+        if (!name) {
+            saveStatus.textContent = 'Please name your outfit! ♡';
+            return;
+        }
+
+        if (clothingIds.length === 0) {
+            saveStatus.textContent = 'Select at least one clothing item!';
+            return;
+        }
+
+        saveButton.disabled = true;
+        saveStatus.textContent = 'Saving your outfit... ♡';
+
+        try {
+            const response = await fetch('/outfits/save/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.cookie
+                        .split('; ')
+                        .find(row => row.startsWith('csrftoken='))
+                        ?.split('=')[1] || ''
+                },
+                body: JSON.stringify({
+                    name: name,
+                    description: description,
+                    clothing_ids: clothingIds,
+                    publish: publish
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Could not save outfit.');
+            }
+
+            saveStatus.textContent = 'Outfit saved successfully! ♡';
+            window.location.reload();
+
+        } catch (error) {
+            saveStatus.textContent = error.message;
+        } finally {
+            saveButton.disabled = false;
+        }
+    });
+
+    const deleteButtons = document.querySelectorAll('.delete-outfit-btn');
+
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+            const confirmed = window.confirm(
+                'Are you sure you want to delete this outfit? ♡'
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Deleting...';
+
+            try {
+                const response = await fetch(button.dataset.deleteUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.cookie
+                            .split('; ')
+                            .find(row => row.startsWith('csrftoken='))
+                            ?.split('=')[1] || ''
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Could not delete outfit.');
+                }
+
+                window.location.reload();
+
+            } catch (error) {
+                alert(error.message);
+                button.disabled = false;
+                button.textContent = '🗑️ Delete Outfit';
+            }
+        });
+    });
+
 });
 
 

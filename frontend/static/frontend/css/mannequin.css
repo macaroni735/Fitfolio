@@ -1,12 +1,4 @@
-/*
-  Canonical mannequin stage.
 
-  Clothing placement (x, y, rotation, scale) is stored relative to this
-  frame, not the viewport. Scale 1 fits the image inside the mannequin
-  guide box, not the full frame. Replay outfits with the same
-  .mannequin-frame aspect ratio and these guide percentages, or stored
-  transforms will no longer line up.
-*/
 
 .mannequin-frame {
     --mannequin-top: 5%;

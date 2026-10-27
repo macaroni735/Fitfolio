@@ -1,0 +1,131 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Community | Fitfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{% static 'frontend/css/community.css' %}">
+    <link rel="stylesheet" href="{% static 'frontend/css/navbar.css' %}">
+</head>
+<body>
+
+ <form action="{% url 'logout' %}" method="POST" class="logout-form">
+        {% csrf_token %}
+        <button type="submit" class="logout-button">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            Logout
+        </button>
+     </form>
+
+    <h1>My Community ♡</h1>
+    <p>Explore clothing shared by the Fitfolio community!</p>
+
+    <main>
+        
+
+<form method="GET" action="{% url 'community' %}">
+    <h2>Explore Your Community ♡</h2>
+
+    <label for="article_type">Clothing Type</label>
+    <select name="article_type" id="article_type">
+        <option value="">All Clothing</option>
+        <option value="tops" {% if selected_article_type == 'tops' %}selected{% endif %}>Tops</option>
+        <option value="bottoms" {% if selected_article_type == 'bottoms' %}selected{% endif %}>Bottoms</option>
+        <option value="dresses" {% if selected_article_type == 'dresses' %}selected{% endif %}>Dresses</option>
+        <option value="outerwear" {% if selected_article_type == 'outerwear' %}selected{% endif %}>Outerwear</option>
+        <option value="shoes" {% if selected_article_type == 'shoes' %}selected{% endif %}>Shoes</option>
+        <option value="accessories" {% if selected_article_type == 'accessories' %}selected{% endif %}>Accessories</option>
+        <option value="other" {% if selected_article_type == 'other' %}selected{% endif %}>Other</option>
+    </select>
+
+    <label for="category">Category</label>
+    <select name="category" id="category">
+        <option value="">All Categories</option>
+        <option value="womens" {% if selected_category == 'womens' %}selected{% endif %}>Women's</option>
+        <option value="mens" {% if selected_category == 'mens' %}selected{% endif %}>Men's</option>
+        <option value="unisex" {% if selected_category == 'unisex' %}selected{% endif %}>Unisex</option>
+        <option value="kids" {% if selected_category == 'kids' %}selected{% endif %}>Kids</option>
+    </select>
+
+    <label for="tag">Search Tags</label>
+    <input type="text" name="tag" id="tag"
+           placeholder="e.g. vintage, casual, summer"
+           value="{{ selected_tag }}">
+
+    <label>
+        <input type="checkbox" name="for_sale" value="true"
+               {% if selected_for_sale == 'true' %}checked{% endif %}>
+        For Sale Only
+    </label>
+
+    <button type="submit">Apply Filters ♡</button>
+    <a href="{% url 'community' %}">Clear Filters</a>
+</form>
+        <div class="clothing-grid">
+        {% for item in public_clothing %}
+            <article>
+                {% if item.final_front_image %}
+                    <img src="{{ item.final_front_image.url }}"
+                         alt="{{ item.display_name }}"
+                         width="200">
+                {% endif %}
+
+                <h2>{{ item.display_name }}</h2>
+                <p>{{ item.description }}</p>
+                <p>Category: {{ item.article_type }}</p>
+
+                {% if item.anonymous %}
+                    <p>Shared anonymously</p>
+                {% else %}
+                    <p>Shared by {{ item.user.username }}</p>
+                {% endif %}
+
+                {% if item.for_sale %}
+                    <p>For sale: ${{ item.price }}</p>
+                {% endif %}
+
+                {% for tag in item.tags %}
+                    <span>#{{ tag }}</span>
+                {% endfor %}
+            </article>
+        {% empty %}
+    <p>No public clothing matches your filters yet. ♡</p>
+{% endfor %}
+</div>
+
+<section class="community-outfits">
+    <h2>Community Outfits ♡</h2>
+
+    <div class="clothing-grid">
+        {% for outfit in public_outfits %}
+            <article class="outfit-card">
+                <h2>{{ outfit.display_name }}</h2>
+
+                <p>{{ outfit.description }}</p>
+
+                {% if outfit.user %}
+                    <p>Created by {{ outfit.user.username }}</p>
+                {% endif %}
+
+                <div class="outfit-tags">
+                    {% for tag in outfit.tags %}
+                        <span>#{{ tag }}</span>
+                    {% endfor %}
+                </div>
+
+                <p>Clothing pieces: {{ outfit.clothing.count }}</p>
+            </article>
+        {% empty %}
+            <p>No public outfits have been shared yet. ♡</p>
+        {% endfor %}
+    </div>
+</section>
+
+    </main>
+{% include 'frontend/navbar.html' %}
+</body>
+</html>

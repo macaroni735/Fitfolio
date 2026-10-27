@@ -13,6 +13,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="{% static 'frontend/css/home.css' %}">
+    <link rel="stylesheet" href="{% static 'frontend/css/navbar.css' %}">
 
 </head>
 <body>
@@ -35,12 +36,14 @@
     </header>
     <section class="dashboard-content">
 
-    <div class="weather-card">
-        <span class="weather-icon">☀️</span>
-        <h3>Today's Weather</h3>
-        <p class="temperature">72°F</p>
-        <p>Sunny</p>
-    </div>
+    
+<div class="weather-card">
+    <span class="weather-icon" id="weather-icon">🌤️</span>
+    <h3>Today's Weather</h3>
+    <p class="temperature" id="weather-temperature">--°F</p>
+    <p id="weather-description">Loading weather...</p>
+</div>
+
 
     <div class="outfit-display">
         <img
@@ -52,7 +55,7 @@
 
     <div class="outfit-card">
     <span class="outfit-icon">✨</span>
-    <h3>Today's Outfit</h3>
+    <h3>Today's  Recommended Outfit</h3>
     <p>No outfit selected yet</p>
     <a href="{% url 'create_outfit' %}">
         <button type="button">Create an Outfit</button>
@@ -60,36 +63,9 @@
 </div>
 
 </section>
-
 </main>
-
-<nav class="bottom-nav">
-
-    <a href="#" class="nav-item active">
-        <span class="nav-icon">🏠</span>
-        <span class="nav-label">Home</span>
-    </a>
-
-    <a href="{% url 'create_outfit' %}" class="nav-item">
-        <span class="nav-icon">👕</span>
-        <span>Create an Outfit</span>
-    </a>
-
-    <a href="{% url 'clothing_capture' %}" class="add-button" aria-label="Add clothing">
-        <span>+</span>
-    </a>
-
-    <a href="{% url 'wardrobe' %}" class="nav-item">
-        <span class="nav-icon">👗</span>
-        <span>My Wardrobe</span>
-    </a>
-
-    <a href="#" class="nav-item">
-        <span class="nav-icon">👥</span>
-        <span>Your Community</span>
-    </a>
-
-</nav>
-
+{% include 'frontend/navbar.html' %}
+{{ wardrobe_data|json_script:"wardrobe-data" }}
+<script src="{% static 'frontend/js/weather.js' %}" defer></script>
 </body>
 </html>

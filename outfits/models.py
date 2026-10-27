@@ -14,6 +14,7 @@ class Outfit(models.Model):
     display_name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     tags = models.JSONField(default=list, blank=True)
+    publish = models.BooleanField(default=False)
     clothing = models.ManyToManyField(
         Clothing,
         related_name='outfits',

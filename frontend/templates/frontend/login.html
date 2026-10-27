@@ -1,3 +1,4 @@
+
 {% load static %}
 
 <!DOCTYPE html>
@@ -6,64 +7,119 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Fitfolio</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{% static 'frontend/css/login.css' %}">
-    
 </head>
 
 <body>
-    <main>
-        <h1>FITFOLIO</h1>
-        <h2>Welcome back, User!</h2>
+    <div class="login-page">
 
-        <form method="POST">
-            {% csrf_token %}
-            <div>
-                <label for="email">Email: </label>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="Enter your email"
-                >
-            </div>
+        <section class="login-branding">
+            <a href="{% url 'landing' %}" class="brand-logo">
+                Fitfolio<span>♡</span>
+            </a>
 
-            <div>
-                <label for="password">Password: </label>
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    placeholder="Enter your password"
-                >
-            </div>
+            <div class="branding-content">
+                <span class="branding-tag">YOUR PERSONAL STYLE SPACE</span>
 
-            {% if error %}
-                <div class="login-notification">
-                    {{ error }}
+                <h1>Your wardrobe,<br><em>your way.</em> ♡</h1>
+
+                <p>
+                    Organize your favorite pieces, create outfits
+                    you love, and find inspiration for every day.
+                </p>
+
+                <div class="branding-decoration">
+                    <span>✿</span>
+                    <span>♡</span>
+                    <span>✧</span>
                 </div>
-            {% endif %}
+            </div>
 
-            <button type="submit">Login</button>
+            <p class="branding-footer">Made for your everyday style ♡</p>
+        </section>
 
-        </form>
-        <div class="login-links">
-            <a href="{% url 'register' %}">Create an Account</a>
-            <a href="{% url 'password_reset' %}">Forgot Password?</a>
-        </div>
-    </main>
-<script>
-    const notification = document.querySelector('.login-notification');
+        <main class="login-main">
+            <div class="login-card">
 
-    if (notification) {
-        setTimeout(() => {
-            notification.style.display = 'none';
-        }, 3000);
-    }
-</script>
+                <div class="login-heading">
+                    <span class="login-sparkle">✧</span>
+                    <h2>Welcome Back!</h2>
+                    <p>Ready to find your next favorite outfit?</p>
+                </div>
+
+                <form method="POST" class="login-form">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            autocomplete="email"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required
+                        >
+                    </div>
+
+                    <div class="forgot-password">
+                        <a href="{% url 'password_reset' %}">Forgot Password?</a>
+                    </div>
+
+                    {% if error %}
+                        <div class="login-notification" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+
+                    <button type="submit" class="login-submit">
+                        Log In ♡
+                    </button>
+                </form>
+
+                <div class="login-divider">
+                    <span>New to Fitfolio?</span>
+                </div>
+
+                <a href="{% url 'register' %}" class="register-link">
+                    Create an Account
+                </a>
+
+                <a href="{% url 'landing' %}" class="back-home">
+                    ← Back to Home
+                </a>
+
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        const notification = document.querySelector('.login-notification');
+
+        if (notification) {
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+    </script>
 </body>
 </html>

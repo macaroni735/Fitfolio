@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <link rel="stylesheet" href="{% static 'frontend/css/navbar.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="{% static 'frontend/css/create_outfit.css' %}">
 </head>
@@ -73,17 +73,10 @@
         </div>
     {% endfor %}
 </div>
-
-
             </div>
-
-
-            <!-- CENTER: OUTFIT PREVIEW -->
             <div class="outfit-preview">
 
                 <h3>Your Outfit</h3>
-
-                
 <div class="preview-area" id="outfit-preview">
     <div class="preview-placeholder" id="preview-placeholder">
         <span>✨</span>
@@ -92,9 +85,43 @@
 </div>
 
 
-                <button class="save-outfit">
-                    Save Outfit
-                </button>
+                
+<div class="outfit-save-section">
+    <label for="outfit-name">Name Your Outfit ♡</label>
+
+    <input
+        type="text"
+        id="outfit-name"
+        name="outfit_name"
+        placeholder="e.g. Cozy Fall Outfit 🍂"
+        maxlength="100"
+        required
+    >
+
+    <label for="outfit-description">Description (optional)</label>
+
+    <textarea
+        id="outfit-description"
+        placeholder="What's the vibe of this outfit?"
+        rows="3"
+    ></textarea>
+
+    <label class="outfit-publish-option">
+        <input type="checkbox" id="outfit-publish">
+        Share this outfit with the community ♡
+    </label>
+
+    <button
+        type="button"
+        id="save-outfit"
+        class="save-outfit"
+    >
+        Save Outfit ♡
+    </button>
+
+    <p id="save-outfit-status" role="status" aria-live="polite"></p>
+</div>
+
 
             </div>
             <div class="saved-outfits-panel">
@@ -115,6 +142,15 @@
                 <h4>{{ outfit.display_name }}</h4>
                 <p>{{ outfit.created_at|date:"M d, Y" }}</p>
                 <span>{{ outfit.clothing.count }} clothing items</span>
+
+<button
+    type="button"
+    class="delete-outfit-btn"
+    data-delete-url="{% url 'delete_outfit' outfit.id %}"
+>
+    🗑️ Delete Outfit
+</button>
+
             </div>
         </div>
     {% empty %}
@@ -132,37 +168,7 @@
         </section>
 
     </main>
-
-
-    
-
-    <nav class="bottom-nav">
-
-        <a href="{% url 'home' %}" class="nav-item">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">Home</span>
-        </a>
-
-        <a href="{% url 'create_outfit' %}" class="nav-item active">
-            <span class="nav-icon">👗</span>
-            <span class="nav-label">Create an Outfit</span>
-        </a>
-
-        <a href="#" class="add-button">
-            <span>+</span>
-        </a>
-
-        <a href="{% url 'wardrobe' %}" class="nav-item">
-            <span class="nav-icon">👚</span>
-            <span class="nav-label">My Wardrobe</span>
-        </a>
-
-        <a href="#" class="nav-item">
-            <span class="nav-icon">👥</span>
-            <span class="nav-label">My Community</span>
-        </a>
-
-    </nav>
+{% include 'frontend/navbar.html' %}
 <script src="{% static 'frontend/js/create_outfit.js' %}" defer></script>
 </body>
 </html>
