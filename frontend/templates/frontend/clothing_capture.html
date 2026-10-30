@@ -188,6 +188,18 @@
             </div>
         </section>
 
+        <!-- Extra photo gallery -->
+        <section id="gallery-step" hidden>
+            <p id="gallery-status" role="status">Extra photos of this item.</p>
+            <div id="gallery-grid" class="gallery-grid"></div>
+            <div class="editor-controls">
+                <div class="editor-nav">
+                    <button id="gallery-back" type="button">Back</button>
+                    <button id="gallery-add" type="button">Add photos</button>
+                </div>
+            </div>
+        </section>
+
         <!-- Form section -->
         <section id="details-step" hidden>
             <div class="details-preview-row">
@@ -240,6 +252,24 @@
                         <button id="edit-back" type="button">Edit</button>
                         <button id="retake-back" type="button">Retake</button>
                     </div>
+                </div>
+
+                <div class="details-preview-group">
+                    <p class="details-preview-label">Gallery</p>
+                    <button type="button" id="add-gallery" class="details-back-prompt">
+                        <span class="details-back-prompt-icon" aria-hidden="true">+</span>
+                        Add photos
+                    </button>
+                    <button
+                        type="button"
+                        class="details-gallery-card"
+                        id="details-gallery-preview"
+                        hidden
+                        aria-label="View gallery photos"
+                    >
+                        <div id="details-gallery-thumbs" class="details-gallery-thumbs"></div>
+                        <span id="details-gallery-count" class="details-gallery-count" hidden></span>
+                    </button>
                 </div>
             </div>
 

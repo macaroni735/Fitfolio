@@ -63,4 +63,17 @@ class Clothing(models.Model):
     stock = models.PositiveIntegerField(default=1)
     transform = models.JSONField(default=default_clothing_transform, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ClothingGalleryImage(models.Model):
+    clothing = models.ForeignKey(
+        Clothing,
+        on_delete=models.CASCADE,
+        related_name="gallery_images",
+    )
+    image = models.ImageField(upload_to="clothing/gallery/")
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["sort_order", "id"]
  

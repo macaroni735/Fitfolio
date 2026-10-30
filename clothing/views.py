@@ -7,10 +7,11 @@ from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from .models import Clothing, default_clothing_transform
+from .models import Clothing, ClothingGalleryImage, default_clothing_transform
 from .services import remove_background_from_upload
 
 CATEGORY_VALUES = {"womens", "mens", "unisex", "kids"}
+MAX_GALLERY_IMAGES = 12
 ARTICLE_TYPE_VALUES = {
     "tops",
     "bottoms",
@@ -130,6 +131,7 @@ def create_clothing(request):
         _assign_image(clothing, "final_back_image", final_back_image, "final_back")
 
     clothing.save()
+    _save_gallery_images(clothing, request.FILES.getlist("gallery_images"))
 
     return JsonResponse({"redirect": reverse("wardrobe")})
 
@@ -228,6 +230,27 @@ def _parse_transform(raw):
         transform["back"] = _parse_transform_values(back_data)
 
     return transform
+
+
+def _save_gallery_images(clothing, uploaded_files):
+    saved = 0
+    for uploaded in uploaded_files:
+        if saved >= MAX_GALLERY_IMAGES:
+            break
+        if uploaded is None:
+            continue
+        content_type = getattr(uploaded, "content_type", "") or ""
+        if content_type and not content_type.startswith("image/"):
+            continue
+
+        gallery_image = ClothingGalleryImage(
+            clothing=clothing,
+            sort_order=saved,
+        )
+        gallery_image.save()
+        _assign_image(gallery_image, "image", uploaded, "gallery")
+        gallery_image.save()
+        saved += 1
 
 
 def _assign_image(clothing, field_name, uploaded_file, prefix):
