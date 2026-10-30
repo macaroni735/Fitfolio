@@ -29,6 +29,9 @@
         <header>
             <h1>New Clothing</h1>
         </header>
+        <p id="back-capture-banner" class="back-capture-banner" hidden>
+            Adding the back of this item.
+        </p>
 
         <!-- Image capture section -->
         <div class="mannequin-frame camera-frame" id="camera-frame" hidden>
@@ -70,6 +73,7 @@
 
         <div class="capture-controls">
             <div class="capture-actions">
+                <button id="back-to-details" type="button" hidden>Back to details</button>
                 <button id="start-camera" type="button">Open Camera</button>
                 <button id="take-photo" type="button" hidden>Take Photo</button>
                 <button id="retake" type="button" hidden>Retake</button>
@@ -187,23 +191,56 @@
         <!-- Form section -->
         <section id="details-step" hidden>
             <div class="details-preview-row">
-                <div class="mannequin-frame details-preview-frame">
-                    <img
-                        class="mannequin-guide"
-                        src="{% static 'frontend/images/Default Guide.png' %}"
-                        alt=""
-                        aria-hidden="true"
-                    >
-                    <div class="mannequin-item-slot" id="details-preview-slot">
+                <div class="details-preview-group">
+                    <p class="details-preview-label">Front</p>
+                    <div class="mannequin-frame details-preview-frame">
                         <img
-                            id="details-preview-image"
-                            class="placed-clothing"
-                            alt="Clothing placement preview"
-                            draggable="false"
+                            class="mannequin-guide"
+                            src="{% static 'frontend/images/Default Guide.png' %}"
+                            alt=""
+                            aria-hidden="true"
                         >
+                        <div class="mannequin-item-slot" id="details-preview-slot">
+                            <img
+                                id="details-preview-image"
+                                class="placed-clothing"
+                                alt="Front clothing placement preview"
+                                draggable="false"
+                            >
+                        </div>
+                    </div>
+                    <button id="edit-position" type="button">Edit</button>
+                </div>
+
+                <div class="details-preview-group">
+                    <p class="details-preview-label">Back</p>
+                    <button type="button" id="add-back" class="details-back-prompt">
+                        <span class="details-back-prompt-icon" aria-hidden="true">+</span>
+                        Add back
+                    </button>
+                    <div id="details-back-preview" hidden>
+                        <div class="mannequin-frame details-preview-frame">
+                            <img
+                                class="mannequin-guide"
+                                src="{% static 'frontend/images/Default Guide.png' %}"
+                                alt=""
+                                aria-hidden="true"
+                            >
+                            <div class="mannequin-item-slot" id="details-back-slot">
+                                <img
+                                    id="details-back-image"
+                                    class="placed-clothing"
+                                    alt="Back clothing placement preview"
+                                    draggable="false"
+                                >
+                            </div>
+                        </div>
+                    </div>
+                    <div class="details-preview-actions" id="back-preview-actions" hidden>
+                        <button id="edit-back" type="button">Edit</button>
+                        <button id="retake-back" type="button">Retake</button>
                     </div>
                 </div>
-                <button id="edit-position" type="button">Edit</button>
             </div>
 
             <form id="clothing-details-form">

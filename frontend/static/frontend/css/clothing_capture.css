@@ -271,10 +271,64 @@ button:disabled {
 
 .details-preview-row {
     display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 1.5rem;
+}
+
+.details-preview-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.details-preview-label {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.details-preview-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.details-back-prompt {
+    width: 140px;
+    aspect-ratio: 3 / 4;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 16px;
-    margin-bottom: 1.5rem;
+    gap: 8px;
+    padding: 12px;
+    border: 3px dashed #F1B8D9;
+    border-radius: 20px;
+    background: rgba(248, 246, 252, 0.9);
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.details-back-prompt-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+}
+
+.back-capture-banner {
+    margin: -10px auto 20px;
+    padding: 10px 16px;
+    max-width: 500px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 16px;
+    font-weight: 600;
 }
 
 .details-preview-frame {

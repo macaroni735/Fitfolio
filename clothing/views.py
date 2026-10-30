@@ -60,6 +60,9 @@ def create_clothing(request):
     original_image = request.FILES.get("original_front_image")
     processed_image = request.FILES.get("processed_front_image")
     final_image = request.FILES.get("final_front_image")
+    original_back_image = request.FILES.get("original_back_image")
+    processed_back_image = request.FILES.get("processed_back_image")
+    final_back_image = request.FILES.get("final_back_image")
 
     if original_image is None or final_image is None:
         return JsonResponse(
@@ -109,6 +112,23 @@ def create_clothing(request):
         "processed_front",
     )
     _assign_image(clothing, "final_front_image", final_image, "final_front")
+
+    if final_back_image is not None:
+        if original_back_image is not None:
+            _assign_image(
+                clothing,
+                "original_back_image",
+                original_back_image,
+                "original_back",
+            )
+        _assign_image(
+            clothing,
+            "processed_back_image",
+            processed_back_image or final_back_image,
+            "processed_back",
+        )
+        _assign_image(clothing, "final_back_image", final_back_image, "final_back")
+
     clothing.save()
 
     return JsonResponse({"redirect": reverse("wardrobe")})
@@ -175,6 +195,20 @@ def _parse_tags(raw):
     return tags
 
 
+def _parse_transform_values(data, fallback=None):
+    transform = dict(fallback or default_clothing_transform())
+    if not isinstance(data, dict):
+        return transform
+
+    for key in ("x", "y", "rotation", "scale"):
+        try:
+            transform[key] = float(data[key])
+        except (KeyError, TypeError, ValueError):
+            continue
+
+    return transform
+
+
 def _parse_transform(raw):
     transform = default_clothing_transform()
     if not raw:
@@ -188,11 +222,10 @@ def _parse_transform(raw):
     if not isinstance(data, dict):
         return transform
 
-    for key in ("x", "y", "rotation", "scale"):
-        try:
-            transform[key] = float(data[key])
-        except (KeyError, TypeError, ValueError):
-            continue
+    transform = _parse_transform_values(data, transform)
+    back_data = data.get("back")
+    if isinstance(back_data, dict):
+        transform["back"] = _parse_transform_values(back_data)
 
     return transform
 
