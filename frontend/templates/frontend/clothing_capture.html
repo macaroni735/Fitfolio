@@ -34,16 +34,33 @@
         <div class="mannequin-frame camera-frame" id="camera-frame" hidden>
 
             <video id="camera" autoplay playsinline hidden></video>
-            <img
-            id="mannequin-guide"
-            class="mannequin-guide"
-            src="{% static 'frontend/images/Default Guide.png' %}"
-            alt=""
-            aria-hidden="true"
-            hidden>
+            <div class="mannequin-item-slot" id="camera-guide-slot">
+                <img
+                    id="mannequin-guide"
+                    class="mannequin-guide"
+                    src="{% static 'frontend/images/Default Guide.png' %}"
+                    alt=""
+                    aria-hidden="true"
+                >
+            </div>
             <img id="preview" alt="Clothing photo preview" hidden>
             <div id="placeholder" class="placeholder">
                 Your camera preview will appear here.
+            </div>
+        </div>
+
+        <div class="position-tools" id="guide-tools" hidden>
+            <label class="position-slider">
+                <span>Guide rotation <span id="guide-rotation-value">0°</span></span>
+                <input id="guide-rotation" type="range" min="-180" max="180" value="0">
+            </label>
+            <label class="position-slider">
+                <span>Guide scale <span id="guide-scale-value">100%</span></span>
+                <input id="guide-scale" type="range" min="20" max="250" value="100">
+            </label>
+            <div class="editor-actions">
+                <button id="toggle-guide" type="button">Hide Guide</button>
+                <button id="reset-guide" type="button">Reset Guide</button>
             </div>
         </div>
 

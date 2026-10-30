@@ -440,7 +440,9 @@ body {
 
 #brush-size,
 #position-rotation,
-#position-scale {
+#position-scale,
+#guide-rotation,
+#guide-scale {
     accent-color: #D987B7;
     cursor: pointer;
 }
@@ -457,7 +459,9 @@ body {
 
 #undo-cleanup,
 #reset-cleanup,
-#reset-position {
+#reset-position,
+#reset-guide,
+#toggle-guide {
     background: #F8DDEA;
 }
 

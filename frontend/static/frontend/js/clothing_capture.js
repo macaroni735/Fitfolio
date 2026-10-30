@@ -6,6 +6,14 @@ const placeholder = document.getElementById("placeholder");
 const canvas = document.getElementById("canvas");
 const status = document.getElementById("status");
 const cameraFrame = document.getElementById("camera-frame");
+const cameraGuideSlot = document.getElementById("camera-guide-slot");
+const guideTools = document.getElementById("guide-tools");
+const guideRotationInput = document.getElementById("guide-rotation");
+const guideScaleInput = document.getElementById("guide-scale");
+const guideRotationValue = document.getElementById("guide-rotation-value");
+const guideScaleValue = document.getElementById("guide-scale-value");
+const toggleGuideButton = document.getElementById("toggle-guide");
+const resetGuideButton = document.getElementById("reset-guide");
 
 const startButton = document.getElementById("start-camera");
 const takeButton = document.getElementById("take-photo");
@@ -98,6 +106,18 @@ const DEFAULT_CLOTHING_TRANSFORM = {
 };
 const clothingTransform = { ...DEFAULT_CLOTHING_TRANSFORM };
 
+const DEFAULT_GUIDE_TRANSFORM = {
+    x: 0.5,
+    y: 0.5,
+    rotation: 0,
+    scale: 1,
+};
+const guideTransform = { ...DEFAULT_GUIDE_TRANSFORM };
+let guideVisible = true;
+let isMovingGuide = false;
+let guideDragOffsetX = 0;
+let guideDragOffsetY = 0;
+
 const clothingTags = [];
 
 captureContainer.clothingImages = clothingImages;
@@ -174,7 +194,6 @@ function showPreview(imageUrl) {
     preview.hidden = false;
     video.hidden = true;
     placeholder.hidden = true;
-    mannequinGuide.hidden = false;
 
     retakeButton.hidden = false;
     takeButton.hidden = true;
@@ -184,11 +203,13 @@ function showPreview(imageUrl) {
     status.textContent =
         "Photo ready for the next step. You can retake or upload another image.";
 
+    showGuideTools();
     stopCamera();
 }
 
 startButton.addEventListener("click", async () => {
     cameraFrame.hidden = false;
+    showGuideTools();
     if (!navigator.mediaDevices?.getUserMedia) {
         status.textContent =
             "Camera access is unavailable here. Please upload a photo instead.";
@@ -207,7 +228,6 @@ startButton.addEventListener("click", async () => {
         video.hidden = false;
         preview.hidden = true;
         placeholder.hidden = true;
-        mannequinGuide.hidden = false;
 
         takeButton.hidden = false;
         takeButton.disabled = false;
@@ -216,7 +236,8 @@ startButton.addEventListener("click", async () => {
         continueButton.hidden = true;
 
         status.textContent =
-            "Position the clothing item in view, then take a photo.";
+            "Position the clothing item in view, then take a photo. You can readjust later.";
+        showGuideTools();
     } catch (error) {
         status.textContent =
             "Couldn't access the camera. Check browser permissions or upload a photo.";
@@ -279,6 +300,115 @@ retakeButton.addEventListener("click", async () => {
 
 window.addEventListener("pagehide", stopCamera);
 
+function resetGuideTransform() {
+    guideTransform.x = DEFAULT_GUIDE_TRANSFORM.x;
+    guideTransform.y = DEFAULT_GUIDE_TRANSFORM.y;
+    guideTransform.rotation = DEFAULT_GUIDE_TRANSFORM.rotation;
+    guideTransform.scale = DEFAULT_GUIDE_TRANSFORM.scale;
+}
+
+function applyGuideTransform() {
+    applySlotTransform(cameraGuideSlot, guideTransform);
+}
+
+function syncGuideControls() {
+    guideRotationInput.value = String(Math.round(guideTransform.rotation));
+    guideScaleInput.value = String(Math.round(guideTransform.scale * 100));
+    guideRotationValue.textContent = `${Math.round(guideTransform.rotation)}°`;
+    guideScaleValue.textContent = `${Math.round(guideTransform.scale * 100)}%`;
+}
+
+function applyGuideVisibility() {
+    cameraGuideSlot.hidden = !guideVisible;
+    toggleGuideButton.textContent = guideVisible ? "Hide Guide" : "Show Guide";
+}
+
+function showGuideTools() {
+    guideTools.hidden = false;
+    applyGuideVisibility();
+    applyGuideTransform();
+    syncGuideControls();
+}
+
+function hideGuideTools() {
+    isMovingGuide = false;
+    guideTools.hidden = true;
+}
+
+cameraGuideSlot.addEventListener("pointerdown", event => {
+    if (!guideVisible || event.button) {
+        return;
+    }
+
+    event.preventDefault();
+    cameraGuideSlot.setPointerCapture(event.pointerId);
+    isMovingGuide = true;
+
+    const frameRect = cameraFrame.getBoundingClientRect();
+    guideDragOffsetX =
+        event.clientX - (frameRect.left + guideTransform.x * frameRect.width);
+    guideDragOffsetY =
+        event.clientY - (frameRect.top + guideTransform.y * frameRect.height);
+});
+
+cameraGuideSlot.addEventListener("pointermove", event => {
+    if (!isMovingGuide) {
+        return;
+    }
+
+    const frameRect = cameraFrame.getBoundingClientRect();
+    guideTransform.x = roundTransform(clamp(
+        (event.clientX - guideDragOffsetX - frameRect.left) / frameRect.width,
+        -0.25,
+        1.25,
+    ));
+    guideTransform.y = roundTransform(clamp(
+        (event.clientY - guideDragOffsetY - frameRect.top) / frameRect.height,
+        -0.25,
+        1.25,
+    ));
+    applyGuideTransform();
+});
+
+function stopMovingGuide() {
+    isMovingGuide = false;
+}
+
+cameraGuideSlot.addEventListener("pointerup", stopMovingGuide);
+cameraGuideSlot.addEventListener("pointercancel", stopMovingGuide);
+
+cameraFrame.addEventListener("wheel", event => {
+    event.preventDefault();
+    guideTransform.scale = clamp(guideTransform.scale + (event.deltaY > 0 ? -0.05 : 0.05), 0.2, 2.5);
+    applyGuideTransform();
+    syncGuideControls();
+}, { passive: false });
+
+guideRotationInput.addEventListener("input", () => {
+    guideTransform.rotation = Number(guideRotationInput.value);
+    applyGuideTransform();
+    syncGuideControls();
+});
+
+guideScaleInput.addEventListener("input", () => {
+    guideTransform.scale = Number(guideScaleInput.value) / 100;
+    applyGuideTransform();
+    syncGuideControls();
+});
+
+toggleGuideButton.addEventListener("click", () => {
+    guideVisible = !guideVisible;
+    applyGuideVisibility();
+});
+
+resetGuideButton.addEventListener("click", () => {
+    guideVisible = true;
+    resetGuideTransform();
+    applyGuideVisibility();
+    applyGuideTransform();
+    syncGuideControls();
+});
+
 
 // Background removal
 
@@ -286,6 +416,7 @@ function showEditorStep() {
     stopCamera();
 
     cameraFrame.hidden = true;
+    hideGuideTools();
     document.querySelector(".capture-controls").hidden = true;
     status.hidden = true;
     cleanupStep.hidden = true;
@@ -313,6 +444,7 @@ function showCaptureStep() {
     cameraFrame.hidden = false;
     document.querySelector(".capture-controls").hidden = false;
     status.hidden = false;
+    showGuideTools();
 }
 
 async function processCapturedImage() {
@@ -742,14 +874,18 @@ function roundTransform(value) {
 const MANNEQUIN_SLOT_WIDTH = 0.7;
 const MANNEQUIN_SLOT_HEIGHT = 0.9;
 
-function applyClothingTransform(slot) {
+function applySlotTransform(slot, transform) {
     const shiftX =
-        ((clothingTransform.x - 0.5) / MANNEQUIN_SLOT_WIDTH) * 100;
+        ((transform.x - 0.5) / MANNEQUIN_SLOT_WIDTH) * 100;
     const shiftY =
-        ((clothingTransform.y - 0.5) / MANNEQUIN_SLOT_HEIGHT) * 100;
+        ((transform.y - 0.5) / MANNEQUIN_SLOT_HEIGHT) * 100;
 
     slot.style.transform =
-        `translate(${shiftX}%, ${shiftY}%) rotate(${clothingTransform.rotation}deg) scale(${clothingTransform.scale})`;
+        `translate(${shiftX}%, ${shiftY}%) rotate(${transform.rotation}deg) scale(${transform.scale})`;
+}
+
+function applyClothingTransform(slot) {
+    applySlotTransform(slot, clothingTransform);
 }
 
 function applyPositionTransform() {

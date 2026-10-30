@@ -190,13 +190,31 @@ button:disabled {
     user-select: none;
 }
 
-#position-slot {
+#position-slot,
+#camera-guide-slot {
     cursor: grab;
     touch-action: none;
 }
 
-#position-slot:active {
+#position-slot:active,
+#camera-guide-slot:active {
     cursor: grabbing;
+}
+
+#camera-guide-slot {
+    z-index: 3;
+}
+
+#camera-guide-slot .mannequin-guide {
+    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#guide-tools .editor-actions {
+    margin-top: 4px;
 }
 
 .position-tools {
