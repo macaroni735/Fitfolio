@@ -22,6 +22,9 @@ const uploadInput = document.getElementById("photo-upload");
 const captureControls = document.querySelector(".capture-controls");
 const backCaptureBanner = document.getElementById("back-capture-banner");
 const backToDetailsButton = document.getElementById("back-to-details");
+const flowBackButton = document.getElementById("flow-back");
+const exitDetailsButton = document.getElementById("exit-details");
+const wardrobeUrl = flowBackButton.dataset.wardrobeUrl;
 
 const editorStep = document.getElementById("editor-step");
 const processingStatus = document.getElementById("processing-status");
@@ -146,6 +149,8 @@ const galleryPhotos = [];
 let galleryDraftBlob = null;
 let galleryDraftUrl = null;
 let openGalleryGridAfterCapture = false;
+let positionReturnToDetails = false;
+let flowBackAction = null;
 const GALLERY_PREVIEW_COUNT = 4;
 const ALLOWED_IMAGE_TYPES = new Set([
     "image/jpeg",
@@ -449,7 +454,69 @@ function updateSideUi() {
     }
 
     backCaptureBanner.hidden = !(extraCapture && !onDetails);
-    backToDetailsButton.hidden = !(extraCapture && onCapture);
+    backToDetailsButton.hidden = true;
+    updateFlowNav();
+}
+
+function goToWardrobe() {
+    window.location.href = wardrobeUrl;
+}
+
+function updateFlowNav() {
+    const onDetails = !detailsStep.hidden;
+    exitDetailsButton.hidden = !onDetails;
+    flowBackButton.hidden = onDetails;
+
+    if (onDetails) {
+        flowBackAction = null;
+        return;
+    }
+
+    if (!editorStep.hidden) {
+        flowBackButton.textContent = "← Photo";
+        flowBackAction = showCaptureStep;
+        return;
+    }
+
+    if (!cleanupStep.hidden) {
+        flowBackButton.textContent = "← Photo";
+        flowBackAction = showCaptureFromCleanup;
+        return;
+    }
+
+    if (!positionStep.hidden) {
+        if (positionReturnToDetails) {
+            flowBackButton.textContent = "← Details";
+            flowBackAction = showDetailsStep;
+        } else {
+            flowBackButton.textContent = "← Cleanup";
+            flowBackAction = showCleanupFromPosition;
+        }
+        return;
+    }
+
+    if (!galleryStep.hidden) {
+        flowBackButton.textContent = "← Details";
+        flowBackAction = showDetailsStep;
+        return;
+    }
+
+    if (capturingGalleryPhotos()) {
+        flowBackButton.textContent = openGalleryGridAfterCapture
+            ? "← Gallery"
+            : "← Details";
+        flowBackAction = cancelCaptureToDetails;
+        return;
+    }
+
+    if (capturingBack()) {
+        flowBackButton.textContent = "← Details";
+        flowBackAction = cancelCaptureToDetails;
+        return;
+    }
+
+    flowBackButton.textContent = "← My Wardrobe";
+    flowBackAction = goToWardrobe;
 }
 
 function cleanupPrompt() {
@@ -1392,6 +1459,7 @@ resetCleanupButton.addEventListener("click", resetCleanup);
 continueAfterCleanupButton.addEventListener("click", async () => {
     try {
         await saveCleanupImage();
+        positionReturnToDetails = false;
         showPositionStep();
     } catch (error) {
         cleanupStatus.textContent = error.message ||
@@ -1576,6 +1644,7 @@ function showDetailsStep() {
 
 function showPositionFromDetails() {
     activateSide("front");
+    positionReturnToDetails = true;
     detailsStep.hidden = true;
     galleryStep.hidden = true;
     positionStep.hidden = false;
@@ -1593,6 +1662,7 @@ function showBackPositionFromDetails() {
         return;
     }
 
+    positionReturnToDetails = true;
     detailsStep.hidden = true;
     hideCaptureChrome();
     showPositionStep();
@@ -1741,6 +1811,11 @@ resetPositionButton.addEventListener("click", () => {
 backToCleanupButton.addEventListener("click", showCleanupFromPosition);
 continueAfterPositionButton.addEventListener("click", showDetailsStep);
 editPositionButton.addEventListener("click", showPositionFromDetails);
+flowBackButton.addEventListener("click", () => {
+    if (typeof flowBackAction === "function") {
+        flowBackAction();
+    }
+});
 addBackButton.addEventListener("click", startBackCapture);
 editBackButton.addEventListener("click", showBackPositionFromDetails);
 retakeBackButton.addEventListener("click", startBackCapture);
@@ -1982,3 +2057,5 @@ tagInput.addEventListener("input", () => {
 tagInput.addEventListener("blur", () => {
     addClothingTag(tagInput.value);
 });
+
+updateFlowNav();

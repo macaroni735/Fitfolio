@@ -23,6 +23,12 @@ body {
     margin: 0;
 }
 
+.capture-topbar {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+}
+
 .back-link {
     display: inline-flex;
     align-items: center;
@@ -40,6 +46,75 @@ body {
 .back-link:hover {
     background: white;
     transform: translateX(-3px);
+}
+
+.capture-container .back-link {
+    border: none;
+    background: rgba(255, 255, 255, 0.65);
+    color: #303047;
+    padding: 10px 16px;
+}
+
+.capture-container .back-link:hover:not(:disabled) {
+    background: white;
+    transform: translateX(-3px);
+}
+
+.exit-details {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    padding: 10px 12px;
+    border-radius: 20px;
+    background: #E24B4A;
+    color: #FFFFFF;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    overflow: hidden;
+    cursor: pointer;
+    transition: background 0.2s ease, padding 0.2s ease;
+}
+
+.exit-details-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.exit-details-label {
+    max-width: 0;
+    margin-left: 0;
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: max-width 0.2s ease, margin 0.2s ease, opacity 0.2s ease;
+}
+
+.exit-details:hover,
+.exit-details:focus-visible {
+    background: #C93C3C;
+}
+
+.exit-details:hover .exit-details-label,
+.exit-details:focus-visible .exit-details-label {
+    max-width: 4rem;
+    margin-left: 8px;
+    opacity: 1;
+}
+
+@media (hover: none) {
+    .exit-details-label {
+        max-width: 4rem;
+        margin-left: 8px;
+        opacity: 1;
+    }
 }
 
 .camera-frame {
@@ -102,6 +177,14 @@ body {
 .capture-container button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.capture-container .exit-details:hover {
+    transform: none;
+}
+
+#editor-step .editor-controls:not(:has(button:not([hidden]))) {
+    display: none;
 }
 
 #continue-to-editor,

@@ -24,7 +24,32 @@
             {% csrf_token %}
         </form>
         
-        <a href="{% url 'wardrobe' %}" class="back-link">← My Wardrobe</a>
+        <div class="capture-topbar">
+            <button
+                type="button"
+                id="flow-back"
+                class="back-link"
+                data-wardrobe-url="{% url 'wardrobe' %}"
+            >
+                ← My Wardrobe
+            </button>
+            <a
+                href="{% url 'wardrobe' %}"
+                id="exit-details"
+                class="exit-details"
+                hidden
+                aria-label="Exit"
+            >
+                <svg class="exit-details-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 7h16"></path>
+                    <path d="M9 7V5h6v2"></path>
+                    <path d="M18 7l-.8 13H6.8L6 7"></path>
+                    <path d="M10 11v6"></path>
+                    <path d="M14 11v6"></path>
+                </svg>
+                <span class="exit-details-label">Exit</span>
+            </a>
+        </div>
 
         <header>
             <h1>New Clothing</h1>
@@ -107,7 +132,7 @@
             </div>
         
             <div class="editor-controls">
-                <button id="back-to-capture" type="button">Back</button>
+                <button id="back-to-capture" type="button" hidden>Back</button>
                 <button id="retry-processing" type="button" hidden>Try Again</button>
             </div>
         </section>
@@ -136,7 +161,7 @@
                 </div>
 
                 <div class="editor-nav">
-                    <button id="back-to-processed" type="button">Back</button>
+                    <button id="back-to-processed" type="button" hidden>Back</button>
                     <button id="continue-after-cleanup" type="button">Next</button>
                 </div>
             </div>
@@ -182,7 +207,7 @@
                 </div>
 
                 <div class="editor-nav">
-                    <button id="back-to-cleanup" type="button">Back</button>
+                    <button id="back-to-cleanup" type="button" hidden>Back</button>
                     <button id="continue-after-position" type="button">Next</button>
                 </div>
             </div>
@@ -194,7 +219,7 @@
             <div id="gallery-grid" class="gallery-grid"></div>
             <div class="editor-controls">
                 <div class="editor-nav">
-                    <button id="gallery-back" type="button">Back</button>
+                    <button id="gallery-back" type="button" hidden>Back</button>
                     <button id="gallery-add" type="button">Add photos</button>
                 </div>
             </div>
