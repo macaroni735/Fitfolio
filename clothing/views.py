@@ -7,10 +7,13 @@ from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from .models import Clothing, default_clothing_transform
+from .images import InvalidClothingImage, prepare_uploaded_image
+from .models import Clothing, ClothingGalleryImage, default_clothing_transform
 from .services import remove_background_from_upload
+from .tags import normalize_tags
 
 CATEGORY_VALUES = {"womens", "mens", "unisex", "kids"}
+MAX_GALLERY_IMAGES = 12
 ARTICLE_TYPE_VALUES = {
     "tops",
     "bottoms",
@@ -32,14 +35,11 @@ def process_clothing_image(request):
             status=400,
         )
 
-    if not uploaded_image.content_type.startswith("image/"):
-        return JsonResponse(
-            {"error": "Please upload a valid image."},
-            status=400,
-        )
-
     try:
+        uploaded_image = prepare_uploaded_image(uploaded_image)
         processed_image = remove_background_from_upload(uploaded_image)
+    except InvalidClothingImage as error:
+        return JsonResponse({"error": str(error)}, status=400)
     except Exception:
         return JsonResponse(
             {"error": "Image processing failed. Please try again."},
@@ -60,6 +60,32 @@ def create_clothing(request):
     original_image = request.FILES.get("original_front_image")
     processed_image = request.FILES.get("processed_front_image")
     final_image = request.FILES.get("final_front_image")
+    original_back_image = request.FILES.get("original_back_image")
+    processed_back_image = request.FILES.get("processed_back_image")
+    final_back_image = request.FILES.get("final_back_image")
+
+    try:
+        original_image = prepare_uploaded_image(original_image, required=False)
+        processed_image = prepare_uploaded_image(processed_image, required=False)
+        final_image = prepare_uploaded_image(final_image, required=False)
+        original_back_image = prepare_uploaded_image(
+            original_back_image,
+            required=False,
+        )
+        processed_back_image = prepare_uploaded_image(
+            processed_back_image,
+            required=False,
+        )
+        final_back_image = prepare_uploaded_image(
+            final_back_image,
+            required=False,
+        )
+        gallery_files = [
+            prepare_uploaded_image(uploaded)
+            for uploaded in request.FILES.getlist("gallery_images")
+        ]
+    except InvalidClothingImage as error:
+        return JsonResponse({"error": str(error)}, status=400)
 
     if original_image is None or final_image is None:
         return JsonResponse(
@@ -109,7 +135,25 @@ def create_clothing(request):
         "processed_front",
     )
     _assign_image(clothing, "final_front_image", final_image, "final_front")
+
+    if final_back_image is not None:
+        if original_back_image is not None:
+            _assign_image(
+                clothing,
+                "original_back_image",
+                original_back_image,
+                "original_back",
+            )
+        _assign_image(
+            clothing,
+            "processed_back_image",
+            processed_back_image or final_back_image,
+            "processed_back",
+        )
+        _assign_image(clothing, "final_back_image", final_back_image, "final_back")
+
     clothing.save()
+    _save_gallery_images(clothing, gallery_files)
 
     return JsonResponse({"redirect": reverse("wardrobe")})
 
@@ -157,22 +201,23 @@ def _parse_tags(raw):
     try:
         data = json.loads(raw)
     except json.JSONDecodeError:
-        return [part.strip() for part in raw.split(",") if part.strip()]
+        data = raw
 
-    if not isinstance(data, list):
-        return []
+    return normalize_tags(data)
 
-    tags = []
-    seen = set()
-    for item in data:
-        if not isinstance(item, str):
+
+def _parse_transform_values(data, fallback=None):
+    transform = dict(fallback or default_clothing_transform())
+    if not isinstance(data, dict):
+        return transform
+
+    for key in ("x", "y", "rotation", "scale"):
+        try:
+            transform[key] = float(data[key])
+        except (KeyError, TypeError, ValueError):
             continue
-        tag = " ".join(item.split())
-        key = tag.lower()
-        if tag and key not in seen:
-            tags.append(tag)
-            seen.add(key)
-    return tags
+
+    return transform
 
 
 def _parse_transform(raw):
@@ -188,13 +233,33 @@ def _parse_transform(raw):
     if not isinstance(data, dict):
         return transform
 
-    for key in ("x", "y", "rotation", "scale"):
-        try:
-            transform[key] = float(data[key])
-        except (KeyError, TypeError, ValueError):
-            continue
+    transform = _parse_transform_values(data, transform)
+    back_data = data.get("back")
+    if isinstance(back_data, dict):
+        transform["back"] = _parse_transform_values(back_data)
 
     return transform
+
+
+def _save_gallery_images(clothing, uploaded_files):
+    saved = 0
+    for uploaded in uploaded_files:
+        if saved >= MAX_GALLERY_IMAGES:
+            break
+        if uploaded is None:
+            continue
+        content_type = getattr(uploaded, "content_type", "") or ""
+        if content_type and not content_type.startswith("image/"):
+            continue
+
+        gallery_image = ClothingGalleryImage(
+            clothing=clothing,
+            sort_order=saved,
+        )
+        gallery_image.save()
+        _assign_image(gallery_image, "image", uploaded, "gallery")
+        gallery_image.save()
+        saved += 1
 
 
 def _assign_image(clothing, field_name, uploaded_file, prefix):

@@ -24,26 +24,74 @@
             {% csrf_token %}
         </form>
         
-        <a href="{% url 'wardrobe' %}" class="back-link">← My Wardrobe</a>
+        <div class="capture-topbar">
+            <button
+                type="button"
+                id="flow-back"
+                class="back-link"
+                data-wardrobe-url="{% url 'wardrobe' %}"
+            >
+                ← My Wardrobe
+            </button>
+            <a
+                href="{% url 'wardrobe' %}"
+                id="exit-details"
+                class="exit-details"
+                hidden
+                aria-label="Exit"
+            >
+                <svg class="exit-details-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 7h16"></path>
+                    <path d="M9 7V5h6v2"></path>
+                    <path d="M18 7l-.8 13H6.8L6 7"></path>
+                    <path d="M10 11v6"></path>
+                    <path d="M14 11v6"></path>
+                </svg>
+                <span class="exit-details-label">Exit</span>
+            </a>
+        </div>
 
         <header>
             <h1>New Clothing</h1>
         </header>
+        <p id="back-capture-banner" class="back-capture-banner" hidden>
+            Adding the back of this item.
+        </p>
 
         <!-- Image capture section -->
         <div class="mannequin-frame camera-frame" id="camera-frame" hidden>
 
             <video id="camera" autoplay playsinline hidden></video>
-            <img
-            id="mannequin-guide"
-            class="mannequin-guide"
-            src="{% static 'frontend/images/Default Guide.png' %}"
-            alt=""
-            aria-hidden="true"
-            hidden>
+            <div class="mannequin-item-slot" id="camera-guide-slot">
+                <img
+                    id="mannequin-guide"
+                    class="mannequin-guide"
+                    src="{% static 'frontend/images/Default Guide.png' %}"
+                    alt=""
+                    aria-hidden="true"
+                >
+            </div>
             <img id="preview" alt="Clothing photo preview" hidden>
             <div id="placeholder" class="placeholder">
                 Your camera preview will appear here.
+            </div>
+            <div id="capture-timer-overlay" class="capture-timer-overlay" hidden>
+                <span id="capture-timer-count" class="capture-timer-count" aria-live="assertive">3</span>
+            </div>
+        </div>
+
+        <div class="position-tools" id="guide-tools" hidden>
+            <label class="position-slider">
+                <span>Guide rotation <span id="guide-rotation-value">0°</span></span>
+                <input id="guide-rotation" type="range" min="-180" max="180" value="0">
+            </label>
+            <label class="position-slider">
+                <span>Guide scale <span id="guide-scale-value">100%</span></span>
+                <input id="guide-scale" type="range" min="20" max="250" value="100">
+            </label>
+            <div class="editor-actions">
+                <button id="toggle-guide" type="button">Hide Guide</button>
+                <button id="reset-guide" type="button">Reset Guide</button>
             </div>
         </div>
 
@@ -53,15 +101,25 @@
 
         <div class="capture-controls">
             <div class="capture-actions">
+                <button id="back-to-details" type="button" hidden>Back to details</button>
                 <button id="start-camera" type="button">Open Camera</button>
                 <button id="take-photo" type="button" hidden>Take Photo</button>
+                <div class="capture-timer-wrap" id="timer-wrap" hidden>
+                    <button id="timer-toggle" type="button" aria-expanded="false" aria-controls="timer-options">
+                        Timer
+                    </button>
+                    <div id="timer-options" class="capture-timer-options" hidden>
+                        <button type="button" id="timer-3" data-seconds="3">3 seconds</button>
+                        <button type="button" id="timer-5" data-seconds="5">5 seconds</button>
+                    </div>
+                </div>
                 <button id="retake" type="button" hidden>Retake</button>
                 <button id="remove-photo" type="button" hidden> Remove Photo</button>
 
                 <label class="upload-button" for="photo-upload">
                     Upload Photo
                 </label>
-                <input id="photo-upload" type="file" accept="image/*" hidden>
+                <input id="photo-upload" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" hidden>
             </div>
 
             <button id="continue-to-editor" type="button" hidden>Next</button>
@@ -86,7 +144,7 @@
             </div>
         
             <div class="editor-controls">
-                <button id="back-to-capture" type="button">Back</button>
+                <button id="back-to-capture" type="button" hidden>Back</button>
                 <button id="retry-processing" type="button" hidden>Try Again</button>
             </div>
         </section>
@@ -115,7 +173,7 @@
                 </div>
 
                 <div class="editor-nav">
-                    <button id="back-to-processed" type="button">Back</button>
+                    <button id="back-to-processed" type="button" hidden>Back</button>
                     <button id="continue-after-cleanup" type="button">Next</button>
                 </div>
             </div>
@@ -161,8 +219,20 @@
                 </div>
 
                 <div class="editor-nav">
-                    <button id="back-to-cleanup" type="button">Back</button>
+                    <button id="back-to-cleanup" type="button" hidden>Back</button>
                     <button id="continue-after-position" type="button">Next</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Extra photo gallery -->
+        <section id="gallery-step" hidden>
+            <p id="gallery-status" role="status">Extra photos of this item.</p>
+            <div id="gallery-grid" class="gallery-grid"></div>
+            <div class="editor-controls">
+                <div class="editor-nav">
+                    <button id="gallery-back" type="button" hidden>Back</button>
+                    <button id="gallery-add" type="button">Add photos</button>
                 </div>
             </div>
         </section>
@@ -170,23 +240,74 @@
         <!-- Form section -->
         <section id="details-step" hidden>
             <div class="details-preview-row">
-                <div class="mannequin-frame details-preview-frame">
-                    <img
-                        class="mannequin-guide"
-                        src="{% static 'frontend/images/Default Guide.png' %}"
-                        alt=""
-                        aria-hidden="true"
-                    >
-                    <div class="mannequin-item-slot" id="details-preview-slot">
+                <div class="details-preview-group">
+                    <p class="details-preview-label">Front</p>
+                    <div class="mannequin-frame details-preview-frame">
                         <img
-                            id="details-preview-image"
-                            class="placed-clothing"
-                            alt="Clothing placement preview"
-                            draggable="false"
+                            class="mannequin-guide"
+                            src="{% static 'frontend/images/Default Guide.png' %}"
+                            alt=""
+                            aria-hidden="true"
                         >
+                        <div class="mannequin-item-slot" id="details-preview-slot">
+                            <img
+                                id="details-preview-image"
+                                class="placed-clothing"
+                                alt="Front clothing placement preview"
+                                draggable="false"
+                            >
+                        </div>
+                    </div>
+                    <button id="edit-position" type="button">Edit</button>
+                </div>
+
+                <div class="details-preview-group">
+                    <p class="details-preview-label">Back</p>
+                    <button type="button" id="add-back" class="details-back-prompt">
+                        <span class="details-back-prompt-icon" aria-hidden="true">+</span>
+                        Add back
+                    </button>
+                    <div id="details-back-preview" hidden>
+                        <div class="mannequin-frame details-preview-frame">
+                            <img
+                                class="mannequin-guide"
+                                src="{% static 'frontend/images/Default Guide.png' %}"
+                                alt=""
+                                aria-hidden="true"
+                            >
+                            <div class="mannequin-item-slot" id="details-back-slot">
+                                <img
+                                    id="details-back-image"
+                                    class="placed-clothing"
+                                    alt="Back clothing placement preview"
+                                    draggable="false"
+                                >
+                            </div>
+                        </div>
+                    </div>
+                    <div class="details-preview-actions" id="back-preview-actions" hidden>
+                        <button id="edit-back" type="button">Edit</button>
+                        <button id="retake-back" type="button">Retake</button>
                     </div>
                 </div>
-                <button id="edit-position" type="button">Edit</button>
+
+                <div class="details-preview-group">
+                    <p class="details-preview-label">Gallery</p>
+                    <button type="button" id="add-gallery" class="details-back-prompt">
+                        <span class="details-back-prompt-icon" aria-hidden="true">+</span>
+                        Add photos
+                    </button>
+                    <button
+                        type="button"
+                        class="details-gallery-card"
+                        id="details-gallery-preview"
+                        hidden
+                        aria-label="View gallery photos"
+                    >
+                        <div id="details-gallery-thumbs" class="details-gallery-thumbs"></div>
+                        <span id="details-gallery-count" class="details-gallery-count" hidden></span>
+                    </button>
+                </div>
             </div>
 
             <form id="clothing-details-form">

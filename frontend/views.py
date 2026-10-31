@@ -114,7 +114,7 @@ def community_view(request):
 
     article_type = request.GET.get('article_type', '')
     category = request.GET.get('category', '')
-    tag = request.GET.get('tag', '').strip()
+    tag = " ".join(request.GET.get('tag', '').split()).lower()
     for_sale = request.GET.get('for_sale', '')
 
     if article_type:
