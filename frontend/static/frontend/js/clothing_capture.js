@@ -149,7 +149,7 @@ const galleryPhotos = [];
 let galleryDraftBlob = null;
 let galleryDraftUrl = null;
 let openGalleryGridAfterCapture = false;
-let positionReturnToDetails = false;
+let hasReachedDetails = false;
 let flowBackAction = null;
 const GALLERY_PREVIEW_COUNT = 4;
 const ALLOWED_IMAGE_TYPES = new Set([
@@ -485,13 +485,8 @@ function updateFlowNav() {
     }
 
     if (!positionStep.hidden) {
-        if (positionReturnToDetails) {
-            flowBackButton.textContent = "← Details";
-            flowBackAction = showDetailsStep;
-        } else {
-            flowBackButton.textContent = "← Cleanup";
-            flowBackAction = showCleanupFromPosition;
-        }
+        flowBackButton.textContent = "← Cleanup";
+        flowBackAction = showCleanupFromPosition;
         return;
     }
 
@@ -509,9 +504,9 @@ function updateFlowNav() {
         return;
     }
 
-    if (capturingBack()) {
+    if (capturingBack() || hasReachedDetails) {
         flowBackButton.textContent = "← Details";
-        flowBackAction = cancelCaptureToDetails;
+        flowBackAction = capturingBack() ? cancelCaptureToDetails : showDetailsStep;
         return;
     }
 
@@ -1459,7 +1454,6 @@ resetCleanupButton.addEventListener("click", resetCleanup);
 continueAfterCleanupButton.addEventListener("click", async () => {
     try {
         await saveCleanupImage();
-        positionReturnToDetails = false;
         showPositionStep();
     } catch (error) {
         cleanupStatus.textContent = error.message ||
@@ -1626,6 +1620,7 @@ function showDetailsStep() {
     }
 
     rememberCommittedBack();
+    hasReachedDetails = true;
     activateSide("front");
     isPositioning = false;
     editorStep.hidden = true;
@@ -1644,7 +1639,6 @@ function showDetailsStep() {
 
 function showPositionFromDetails() {
     activateSide("front");
-    positionReturnToDetails = true;
     detailsStep.hidden = true;
     galleryStep.hidden = true;
     positionStep.hidden = false;
@@ -1662,7 +1656,6 @@ function showBackPositionFromDetails() {
         return;
     }
 
-    positionReturnToDetails = true;
     detailsStep.hidden = true;
     hideCaptureChrome();
     showPositionStep();
