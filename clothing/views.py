@@ -7,6 +7,7 @@ from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from .images import InvalidClothingImage, prepare_uploaded_image
 from .models import Clothing, ClothingGalleryImage, default_clothing_transform
 from .services import remove_background_from_upload
 
@@ -33,14 +34,11 @@ def process_clothing_image(request):
             status=400,
         )
 
-    if not uploaded_image.content_type.startswith("image/"):
-        return JsonResponse(
-            {"error": "Please upload a valid image."},
-            status=400,
-        )
-
     try:
+        uploaded_image = prepare_uploaded_image(uploaded_image)
         processed_image = remove_background_from_upload(uploaded_image)
+    except InvalidClothingImage as error:
+        return JsonResponse({"error": str(error)}, status=400)
     except Exception:
         return JsonResponse(
             {"error": "Image processing failed. Please try again."},
@@ -64,6 +62,29 @@ def create_clothing(request):
     original_back_image = request.FILES.get("original_back_image")
     processed_back_image = request.FILES.get("processed_back_image")
     final_back_image = request.FILES.get("final_back_image")
+
+    try:
+        original_image = prepare_uploaded_image(original_image, required=False)
+        processed_image = prepare_uploaded_image(processed_image, required=False)
+        final_image = prepare_uploaded_image(final_image, required=False)
+        original_back_image = prepare_uploaded_image(
+            original_back_image,
+            required=False,
+        )
+        processed_back_image = prepare_uploaded_image(
+            processed_back_image,
+            required=False,
+        )
+        final_back_image = prepare_uploaded_image(
+            final_back_image,
+            required=False,
+        )
+        gallery_files = [
+            prepare_uploaded_image(uploaded)
+            for uploaded in request.FILES.getlist("gallery_images")
+        ]
+    except InvalidClothingImage as error:
+        return JsonResponse({"error": str(error)}, status=400)
 
     if original_image is None or final_image is None:
         return JsonResponse(
@@ -131,7 +152,7 @@ def create_clothing(request):
         _assign_image(clothing, "final_back_image", final_back_image, "final_back")
 
     clothing.save()
-    _save_gallery_images(clothing, request.FILES.getlist("gallery_images"))
+    _save_gallery_images(clothing, gallery_files)
 
     return JsonResponse({"redirect": reverse("wardrobe")})
 

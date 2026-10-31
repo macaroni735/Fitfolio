@@ -147,6 +147,14 @@ let galleryDraftBlob = null;
 let galleryDraftUrl = null;
 let openGalleryGridAfterCapture = false;
 const GALLERY_PREVIEW_COUNT = 4;
+const ALLOWED_IMAGE_TYPES = new Set([
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+]);
+const MAX_IMAGE_DIMENSION = 1600;
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
 const DEFAULT_GUIDE_TRANSFORM = {
     x: 0.5,
@@ -509,6 +517,107 @@ function resetClothingTransform() {
     clothingTransform.scale = DEFAULT_CLOTHING_TRANSFORM.scale;
 }
 
+function isAllowedImageFile(file) {
+    const type = (file.type || "").toLowerCase();
+    if (ALLOWED_IMAGE_TYPES.has(type)) {
+        return true;
+    }
+
+    if (type && !type.startsWith("image/")) {
+        return false;
+    }
+
+    return /\.(jpe?g|png|webp)$/i.test(file.name || "");
+}
+
+function loadImageElement(blob) {
+    const url = URL.createObjectURL(blob);
+    const image = new Image();
+    image.src = url;
+
+    return image.decode().then(() => {
+        URL.revokeObjectURL(url);
+        return image;
+    }).catch(error => {
+        URL.revokeObjectURL(url);
+        throw error;
+    });
+}
+
+function canvasToBlob(sourceCanvas, type, quality) {
+    return new Promise((resolve, reject) => {
+        sourceCanvas.toBlob(blob => {
+            if (blob) {
+                resolve(blob);
+                return;
+            }
+            reject(new Error("Couldn't process the image. Please try another photo."));
+        }, type, quality);
+    });
+}
+
+async function prepareImageFile(file) {
+    if (!file) {
+        throw new Error("Please choose an image file.");
+    }
+
+    if (!isAllowedImageFile(file)) {
+        throw new Error("Please upload a JPEG, PNG, or WebP image.");
+    }
+
+    let image;
+    try {
+        image = await loadImageElement(file);
+    } catch {
+        throw new Error("Please upload a valid image.");
+    }
+
+    const maxSide = Math.max(image.naturalWidth, image.naturalHeight);
+    const scale = maxSide > MAX_IMAGE_DIMENSION
+        ? MAX_IMAGE_DIMENSION / maxSide
+        : 1;
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const type = (file.type || "").toLowerCase();
+    const needsResize = scale < 1;
+    const tooHeavy = file.size > MAX_IMAGE_BYTES;
+
+    if (!needsResize && !tooHeavy) {
+        return file;
+    }
+
+    const drawCanvas = document.createElement("canvas");
+    drawCanvas.width = width;
+    drawCanvas.height = height;
+    drawCanvas.getContext("2d").drawImage(image, 0, 0, width, height);
+
+    const preferPng = type === "image/png" || type === "image/webp" || !type;
+    let blob = await canvasToBlob(
+        drawCanvas,
+        preferPng ? "image/png" : "image/jpeg",
+        0.92,
+    );
+
+    if (blob.size > MAX_IMAGE_BYTES) {
+        for (const quality of [0.85, 0.75, 0.65, 0.55, 0.45]) {
+            blob = await canvasToBlob(drawCanvas, "image/jpeg", quality);
+            if (blob.size <= MAX_IMAGE_BYTES) {
+                break;
+            }
+        }
+    }
+
+    if (blob.size > MAX_IMAGE_BYTES) {
+        throw new Error(
+            "That image is still too large after resizing. Please try a smaller photo.",
+        );
+    }
+
+    const extension = blob.type === "image/png" ? "png" : "jpg";
+    const baseName = (file.name || "photo").replace(/\.[^.]+$/, "") || "photo";
+    return new File([blob], `${baseName}.${extension}`, { type: blob.type });
+}
+
 function setOriginalImage(blob) {
     replaceImage("original", blob);
     clearProcessedImages();
@@ -617,55 +726,70 @@ takeButton.addEventListener("click", () => {
     const context = canvas.getContext("2d");
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    canvas.toBlob(blob => {
+    canvas.toBlob(async blob => {
         if (!blob) {
             status.textContent = "Couldn't capture the image. Please try again.";
             return;
         }
 
-        if (capturingGalleryPhotos()) {
-            setGalleryDraft(blob);
-            showPreview(galleryDraftUrl);
-            return;
-        }
+        try {
+            const prepared = await prepareImageFile(blob);
+            if (capturingGalleryPhotos()) {
+                setGalleryDraft(prepared);
+                showPreview(galleryDraftUrl);
+                return;
+            }
 
-        setOriginalImage(blob);
-        showPreview(imagePreviewUrls.original);
+            setOriginalImage(prepared);
+            showPreview(imagePreviewUrls.original);
+        } catch (error) {
+            status.textContent = error.message ||
+                "Couldn't capture the image. Please try again.";
+        }
     }, "image/png");
 });
 
-uploadInput.addEventListener("change", () => {
+uploadInput.addEventListener("change", async () => {
     const files = [...uploadInput.files];
     if (!files.length) {
         return;
     }
 
-    const images = files.filter(file => file.type.startsWith("image/"));
+    const images = files.filter(isAllowedImageFile);
     if (!images.length) {
-        status.textContent = "Please choose an image file.";
+        status.textContent = "Please upload a JPEG, PNG, or WebP image.";
         uploadInput.value = "";
         return;
     }
 
-    if (capturingGalleryPhotos()) {
-        if (images.length > 1) {
+    try {
+        if (capturingGalleryPhotos() && images.length > 1) {
             const remaining = MAX_GALLERY_PHOTOS - galleryPhotos.length;
-            images.slice(0, remaining).forEach(file => addGalleryPhoto(file));
+            for (const file of images.slice(0, remaining)) {
+                addGalleryPhoto(await prepareImageFile(file));
+            }
             uploadInput.value = "";
             finishGalleryCapture();
             return;
         }
 
-        setGalleryDraft(images[0]);
-        cameraFrame.hidden = false;
-        showPreview(galleryDraftUrl);
-        uploadInput.value = "";
-        return;
-    }
+        const prepared = await prepareImageFile(images[0]);
+        if (capturingGalleryPhotos()) {
+            setGalleryDraft(prepared);
+            cameraFrame.hidden = false;
+            showPreview(galleryDraftUrl);
+            uploadInput.value = "";
+            return;
+        }
 
-    setOriginalImage(images[0]);
-    cameraFrame.hidden = false;
-    showPreview(imagePreviewUrls.original);
+        setOriginalImage(prepared);
+        cameraFrame.hidden = false;
+        showPreview(imagePreviewUrls.original);
+        uploadInput.value = "";
+    } catch (error) {
+        status.textContent = error.message || "Please upload a valid image.";
+        uploadInput.value = "";
+    }
 });
 
 retakeButton.addEventListener("click", async () => {
