@@ -509,6 +509,27 @@ body {
     background: #A8D5A2;
 }
 
+#timer-toggle,
+#timer-3,
+#timer-5 {
+    background: #F8DDEA;
+}
+
+.capture-timer-wrap {
+    min-width: 155px;
+}
+
+@media (max-width: 650px) {
+    .capture-timer-wrap,
+    .capture-timer-options {
+        width: 100%;
+    }
+
+    .capture-timer-options button {
+        flex: 1;
+    }
+}
+
 #retake {
     background: #F8DDEA;
 }

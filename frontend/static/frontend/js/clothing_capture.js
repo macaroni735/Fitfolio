@@ -17,6 +17,11 @@ const resetGuideButton = document.getElementById("reset-guide");
 
 const startButton = document.getElementById("start-camera");
 const takeButton = document.getElementById("take-photo");
+const timerWrap = document.getElementById("timer-wrap");
+const timerToggle = document.getElementById("timer-toggle");
+const timerOptions = document.getElementById("timer-options");
+const timerOverlay = document.getElementById("capture-timer-overlay");
+const timerCount = document.getElementById("capture-timer-count");
 const retakeButton = document.getElementById("retake");
 const uploadInput = document.getElementById("photo-upload");
 const captureControls = document.querySelector(".capture-controls");
@@ -108,6 +113,8 @@ const processImageUrl = captureContainer.dataset.processUrl;
 const createUrl = captureContainer.dataset.createUrl;
 
 let stream = null;
+let captureTimerId = null;
+let captureTimerRemaining = 0;
 let processingRequestId = 0;
 
 // Held in the page until Create saves them.
@@ -418,6 +425,7 @@ function showGalleryStep() {
 }
 
 function hideCaptureChrome() {
+    hideCaptureTimerUi();
     stopCamera();
     hideGuideTools();
     cameraFrame.hidden = true;
@@ -574,7 +582,7 @@ function resetCaptureUiForNewPhoto() {
                 ? "A photo of the back of this item will appear here."
                 : "Your camera preview will appear here.";
     retakeButton.hidden = true;
-    takeButton.hidden = true;
+    setTakePhotoVisible(false);
     continueButton.hidden = true;
     startButton.hidden = false;
     uploadInput.value = "";
@@ -735,6 +743,70 @@ function setFinalImage(blob) {
     }
 }
 
+function setTakePhotoVisible(visible) {
+    takeButton.hidden = !visible;
+    timerWrap.hidden = !visible;
+    if (!visible) {
+        hideCaptureTimerUi();
+    }
+}
+
+function isCaptureTimerRunning() {
+    return captureTimerId !== null;
+}
+
+function hideCaptureTimerUi() {
+    if (captureTimerId !== null) {
+        window.clearInterval(captureTimerId);
+        captureTimerId = null;
+    }
+
+    captureTimerRemaining = 0;
+    timerOverlay.hidden = true;
+    timerOptions.hidden = true;
+    timerToggle.textContent = "Timer";
+    timerToggle.setAttribute("aria-expanded", "false");
+    takeButton.disabled = false;
+}
+
+function cancelCaptureTimer() {
+    const wasRunning = isCaptureTimerRunning();
+    hideCaptureTimerUi();
+
+    if (wasRunning && !video.hidden && stream) {
+        status.textContent = "Timer canceled. Take a photo when you're ready.";
+    }
+}
+
+function startCaptureTimer(seconds) {
+    if (!video.videoWidth || !video.videoHeight) {
+        status.textContent = "The camera is not ready yet. Try again in a moment.";
+        return;
+    }
+
+    hideCaptureTimerUi();
+    captureTimerRemaining = seconds;
+    timerOverlay.hidden = false;
+    timerCount.textContent = String(seconds);
+    takeButton.disabled = true;
+    timerToggle.textContent = "Cancel";
+    timerToggle.setAttribute("aria-expanded", "false");
+    status.textContent = `Taking photo in ${seconds}...`;
+
+    captureTimerId = window.setInterval(() => {
+        captureTimerRemaining -= 1;
+
+        if (captureTimerRemaining <= 0) {
+            hideCaptureTimerUi();
+            captureFromCamera();
+            return;
+        }
+
+        timerCount.textContent = String(captureTimerRemaining);
+        status.textContent = `Taking photo in ${captureTimerRemaining}...`;
+    }, 1000);
+}
+
 function stopCamera() {
     if (stream) {
         stream.getTracks().forEach(track => track.stop());
@@ -742,7 +814,7 @@ function stopCamera() {
     }
 
     video.srcObject = null;
-    takeButton.hidden = true;
+    setTakePhotoVisible(false);
 }
 
 function showPreview(imageUrl) {
@@ -752,7 +824,7 @@ function showPreview(imageUrl) {
     placeholder.hidden = true;
 
     retakeButton.hidden = false;
-    takeButton.hidden = true;
+    setTakePhotoVisible(false);
     startButton.hidden = true;
     continueButton.hidden = false;
 
@@ -790,7 +862,7 @@ startButton.addEventListener("click", async () => {
         preview.hidden = true;
         placeholder.hidden = true;
 
-        takeButton.hidden = false;
+        setTakePhotoVisible(true);
         takeButton.disabled = false;
         retakeButton.hidden = true;
         startButton.hidden = true;
@@ -810,7 +882,7 @@ startButton.addEventListener("click", async () => {
     }
 });
 
-takeButton.addEventListener("click", () => {
+function captureFromCamera() {
     if (!video.videoWidth || !video.videoHeight) {
         status.textContent = "The camera is not ready yet. Try again in a moment.";
         return;
@@ -843,6 +915,50 @@ takeButton.addEventListener("click", () => {
                 "Couldn't capture the image. Please try again.";
         }
     }, "image/png");
+}
+
+takeButton.addEventListener("click", () => {
+    if (isCaptureTimerRunning()) {
+        return;
+    }
+
+    captureFromCamera();
+});
+
+timerToggle.addEventListener("click", () => {
+    if (isCaptureTimerRunning()) {
+        cancelCaptureTimer();
+        return;
+    }
+
+    const open = timerOptions.hidden;
+    timerOptions.hidden = !open;
+    timerToggle.setAttribute("aria-expanded", open ? "true" : "false");
+});
+
+timerOptions.addEventListener("click", event => {
+    const option = event.target.closest("button[data-seconds]");
+    if (!option) {
+        return;
+    }
+
+    const seconds = Number(option.dataset.seconds);
+    if (seconds === 3 || seconds === 5) {
+        startCaptureTimer(seconds);
+    }
+});
+
+document.addEventListener("click", event => {
+    if (timerWrap.hidden || timerOptions.hidden || isCaptureTimerRunning()) {
+        return;
+    }
+
+    if (timerWrap.contains(event.target)) {
+        return;
+    }
+
+    timerOptions.hidden = true;
+    timerToggle.setAttribute("aria-expanded", "false");
 });
 
 uploadInput.addEventListener("change", async () => {
@@ -900,7 +1016,7 @@ retakeButton.addEventListener("click", async () => {
     uploadInput.value = "";
 
     retakeButton.hidden = true;
-    takeButton.hidden = true;
+    setTakePhotoVisible(false);
     startButton.hidden = false;
 
     status.textContent = "Reopening camera...";

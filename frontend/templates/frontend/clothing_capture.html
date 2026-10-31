@@ -75,6 +75,9 @@
             <div id="placeholder" class="placeholder">
                 Your camera preview will appear here.
             </div>
+            <div id="capture-timer-overlay" class="capture-timer-overlay" hidden>
+                <span id="capture-timer-count" class="capture-timer-count" aria-live="assertive">3</span>
+            </div>
         </div>
 
         <div class="position-tools" id="guide-tools" hidden>
@@ -101,6 +104,15 @@
                 <button id="back-to-details" type="button" hidden>Back to details</button>
                 <button id="start-camera" type="button">Open Camera</button>
                 <button id="take-photo" type="button" hidden>Take Photo</button>
+                <div class="capture-timer-wrap" id="timer-wrap" hidden>
+                    <button id="timer-toggle" type="button" aria-expanded="false" aria-controls="timer-options">
+                        Timer
+                    </button>
+                    <div id="timer-options" class="capture-timer-options" hidden>
+                        <button type="button" id="timer-3" data-seconds="3">3 seconds</button>
+                        <button type="button" id="timer-5" data-seconds="5">5 seconds</button>
+                    </div>
+                </div>
                 <button id="retake" type="button" hidden>Retake</button>
                 <button id="remove-photo" type="button" hidden> Remove Photo</button>
 
