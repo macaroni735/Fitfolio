@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from clothing.models import Clothing
+from clothing.tags import TagsField
 import uuid
 
 # Create your models here.
@@ -13,7 +14,7 @@ class Outfit(models.Model):
     )
     display_name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    tags = models.JSONField(default=list, blank=True)
+    tags = TagsField()
     publish = models.BooleanField(default=False)
     clothing = models.ManyToManyField(
         Clothing,

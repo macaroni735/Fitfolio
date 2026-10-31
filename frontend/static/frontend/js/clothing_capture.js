@@ -2123,7 +2123,7 @@ clothingDetailsForm.addEventListener("submit", event => {
 });
 
 function normalizeTag(value) {
-    return value.replaceAll(",", " ").trim().replace(/\s+/g, " ");
+    return value.replaceAll(",", " ").trim().replace(/\s+/g, " ").toLowerCase();
 }
 
 function renderClothingTags() {
@@ -2160,9 +2160,7 @@ function addClothingTag(rawValue) {
         return;
     }
 
-    const alreadyAdded = clothingTags.some(
-        existing => existing.toLowerCase() === tag.toLowerCase(),
-    );
+    const alreadyAdded = clothingTags.includes(tag);
     if (alreadyAdded) {
         tagInput.value = "";
         return;

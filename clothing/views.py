@@ -10,6 +10,7 @@ from django.views.decorators.http import require_POST
 from .images import InvalidClothingImage, prepare_uploaded_image
 from .models import Clothing, ClothingGalleryImage, default_clothing_transform
 from .services import remove_background_from_upload
+from .tags import normalize_tags
 
 CATEGORY_VALUES = {"womens", "mens", "unisex", "kids"}
 MAX_GALLERY_IMAGES = 12
@@ -200,22 +201,9 @@ def _parse_tags(raw):
     try:
         data = json.loads(raw)
     except json.JSONDecodeError:
-        return [part.strip() for part in raw.split(",") if part.strip()]
+        data = raw
 
-    if not isinstance(data, list):
-        return []
-
-    tags = []
-    seen = set()
-    for item in data:
-        if not isinstance(item, str):
-            continue
-        tag = " ".join(item.split())
-        key = tag.lower()
-        if tag and key not in seen:
-            tags.append(tag)
-            seen.add(key)
-    return tags
+    return normalize_tags(data)
 
 
 def _parse_transform_values(data, fallback=None):

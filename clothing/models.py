@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 import uuid
 
+from .tags import TagsField
+
 
 def default_clothing_transform():
     return {
@@ -25,7 +27,7 @@ class Clothing(models.Model):
     category = models.CharField(max_length=50, default="unisex")
     article_type = models.CharField(max_length=50, default="other", blank=True)
     size = models.CharField(max_length=20, blank=True)
-    tags = models.JSONField(default=list, blank=True)
+    tags = TagsField()
     count = models.PositiveIntegerField(default=1)
     original_front_image = models.ImageField(
         upload_to='clothing/',
