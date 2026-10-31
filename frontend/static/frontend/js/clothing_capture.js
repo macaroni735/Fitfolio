@@ -458,8 +458,42 @@ function updateSideUi() {
     updateFlowNav();
 }
 
+const LEAVE_WARNING = "Are you sure you want to leave? Unsaved data may be lost.";
+let ignoreLeaveWarning = false;
+let hasLeftFirstCaptureStep = false;
+
+function isPastFirstCaptureStep() {
+    return hasLeftFirstCaptureStep
+        || !editorStep.hidden
+        || !cleanupStep.hidden
+        || !positionStep.hidden
+        || !detailsStep.hidden
+        || !galleryStep.hidden
+        || capturingBack()
+        || capturingGalleryPhotos()
+        || hasReachedDetails
+        || Boolean(clothingImages.processed || clothingImages.final);
+}
+
+function confirmLeavePage() {
+    if (ignoreLeaveWarning || !isPastFirstCaptureStep()) {
+        return true;
+    }
+
+    return window.confirm(LEAVE_WARNING);
+}
+
+function leaveTo(url) {
+    if (!confirmLeavePage()) {
+        return;
+    }
+
+    ignoreLeaveWarning = true;
+    window.location.href = url;
+}
+
 function goToWardrobe() {
-    window.location.href = wardrobeUrl;
+    leaveTo(wardrobeUrl);
 }
 
 function updateFlowNav() {
@@ -999,6 +1033,8 @@ resetGuideButton.addEventListener("click", () => {
 // Background removal
 
 function showEditorStep() {
+    hasLeftFirstCaptureStep = true;
+
     if (capturingGalleryPhotos()) {
         commitGalleryDraft();
         return;
@@ -1954,6 +1990,7 @@ async function createClothing() {
             );
         }
 
+        ignoreLeaveWarning = true;
         window.location.href = data.redirect || "/wardrobe/";
     } catch (error) {
         showDetailsError(
@@ -2050,6 +2087,43 @@ tagInput.addEventListener("input", () => {
 
 tagInput.addEventListener("blur", () => {
     addClothingTag(tagInput.value);
+});
+
+document.addEventListener("click", event => {
+    const link = event.target.closest("a[href]");
+    if (!link || event.defaultPrevented || event.button !== 0) {
+        return;
+    }
+
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+    }
+
+    if (link.target && link.target !== "_self") {
+        return;
+    }
+
+    const nextUrl = new URL(link.href, window.location.href);
+    const sameDocument =
+        nextUrl.origin === window.location.origin
+        && nextUrl.pathname === window.location.pathname
+        && nextUrl.search === window.location.search;
+
+    if ((sameDocument && nextUrl.hash) || !isPastFirstCaptureStep()) {
+        return;
+    }
+
+    event.preventDefault();
+    leaveTo(nextUrl.href);
+});
+
+window.addEventListener("beforeunload", event => {
+    if (ignoreLeaveWarning || !isPastFirstCaptureStep()) {
+        return;
+    }
+
+    event.preventDefault();
+    event.returnValue = LEAVE_WARNING;
 });
 
 updateFlowNav();
