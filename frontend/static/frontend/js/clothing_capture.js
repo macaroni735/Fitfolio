@@ -1255,6 +1255,7 @@ async function loadCleanupCanvas() {
 
     cleanupCanvas.width = image.naturalWidth;
     cleanupCanvas.height = image.naturalHeight;
+    cleanupCanvas.style.aspectRatio = `${image.naturalWidth} / ${image.naturalHeight}`;
     cleanupContext.clearRect(0, 0, cleanupCanvas.width, cleanupCanvas.height);
     cleanupContext.drawImage(image, 0, 0);
 
