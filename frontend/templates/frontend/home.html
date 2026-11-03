@@ -1,7 +1,4 @@
 {% load static %}
-
-
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,9 +21,8 @@
 
         <header class="home-header">
             <div class="header-text">
-                <span class="section-label">YOUR PERSONAL STYLE STUDIO</span>
-                <h1>Good morning, beautiful.</h1>
-                <p>A little inspiration for whatever today brings.</p>
+                <span class="section-label">YOUR PERSONAL DIGITAL WARDROBE</span>
+                <h1>Good afternoon!</h1>
             </div>
 
             <form action="{% url 'logout' %}" method="POST" class="logout-form">
@@ -43,16 +39,26 @@
             <div class="mannequin-section">
                 <div class="mannequin-heading">
                     <span class="section-label">THE DAILY EDIT</span>
-                    <h2>Today's Look</h2>
+                    <h2>Today's Look:</h2>
                 </div>
 
-                <div class="mannequin-display">
-                    <img
-                        src="{% static 'frontend/images/mannequin-stage.png' %}"
-                        alt="Fitfolio dressing mannequin"
-                        class="mannequin-stage"
-                    >
-                </div>
+                
+<div class="mannequin-display">
+    <div class="home-mannequin-stage" id="home-mannequin-stage">
+        <div class="home-mannequin-body">
+            <div class="home-mannequin-head"></div>
+            <div class="home-mannequin-neck"></div>
+            <div class="home-mannequin-torso"></div>
+            <div class="home-mannequin-arm home-mannequin-arm-left"></div>
+            <div class="home-mannequin-arm home-mannequin-arm-right"></div>
+            <div class="home-mannequin-leg home-mannequin-leg-left"></div>
+            <div class="home-mannequin-leg home-mannequin-leg-right"></div>
+        </div>
+
+        <div class="home-mannequin-clothing-layer" id="home-mannequin-clothing-layer"></div>
+    </div>
+</div>
+
 
                 <div class="mannequin-navigation">
                     <button type="button" class="look-arrow" aria-label="Previous look">
@@ -71,8 +77,7 @@
 
                 <div class="styling-intro">
                     <span class="section-label">CURATED JUST FOR YOU</span>
-                    <h2>A look made for <em>your day.</em></h2>
-                    <p>Discover outfit combinations inspired by the weather and pieces from your own wardrobe.</p>
+                    <h2>A look made just <em>for you.</em></h2>
                 </div>
 
                 <div class="weather-card">
@@ -132,6 +137,7 @@
     {{ wardrobe_data|json_script:"wardrobe-data" }}
 
     <script src="{% static 'frontend/js/weather.js' %}" defer></script>
+    <script src="{% static 'frontend/js/outfit_recommendations.js' %}" defer></script>
 
 </body>
 </html>

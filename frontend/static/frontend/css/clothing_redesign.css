@@ -1,7 +1,7 @@
 
 body {
-    background: #9EC0EB;
-    color: #303047;
+    background: #FCECF5;
+    color: #4B4560;
     font-family: 'Poppins', sans-serif;
 }
 
@@ -17,10 +17,12 @@ body {
 }
 
 .capture-container > header h1 {
-    font-size: 38px;
+    font-family: 'Playfair Display', serif;
+    font-size: 44px;
     font-weight: 700;
-    color: #303047;
+    color: #4B4560;
     margin: 0;
+    letter-spacing: -1px;
 }
 
 .back-link {
@@ -506,4 +508,48 @@ body {
 
 #remove-photo:hover:not(:disabled) {
     background: #FFD1D1;
+}
+
+.capture-container {
+    width: min(1000px, 92%);
+}
+
+.back-link {
+    background: #FFFCFA;
+    color: #D878A8;
+    border: 1px solid #F1D6E4;
+}
+
+.back-link:hover {
+    background: #FFF4FA;
+}
+
+#editor-step,
+#cleanup-step,
+#position-step,
+#details-step {
+    background: #FFFCFA;
+    box-shadow: 0 10px 35px rgba(75, 69, 96, 0.06);
+}
+
+.capture-container button,
+.capture-container .upload-button {
+    font-family: 'Poppins', sans-serif;
+}
+
+#start-camera {
+    background: #D878A8;
+    color: white;
+}
+
+#start-camera:hover:not(:disabled) {
+    background: #C76597;
+}
+
+#continue-to-editor,
+#continue-after-cleanup,
+#continue-after-position,
+#create-clothing {
+    background: #B8D4B0;
+    color: #4B4560;
 }
