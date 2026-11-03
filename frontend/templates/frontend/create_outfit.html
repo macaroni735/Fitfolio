@@ -12,9 +12,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'frontend/css/navbar.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="{% static 'frontend/css/create_outfit.css' %}">
+    <link rel="stylesheet" href="{% static 'frontend/css/navbar.css' %}">
 </head>
 
 <body>
@@ -29,42 +29,72 @@
     <main class="outfit-container">
 
         <header class="outfit-header">
-            <h1>FITFOLIO</h1>
-            <h2>Create an Outfit</h2>
-            <p>Mix and match pieces from your wardrobe ✨</p>
-        </header>
+    <div class="outfit-header-content">
+        <h1>Create Your Look<span class="header-accent">.</span></h1>
+
+        <p>
+           Create an outfit that fits YOU
+        </p>
+    </div>
+</header>
 
 
         <section class="outfit-builder">
 
-            <!-- LEFT SIDE: WARDROBE -->
+            
             <div class="wardrobe-panel">
 
                 <h3>Your Wardrobe</h3>
 
                 <div class="category-buttons">
-                    <button class="category active">All</button>
-                    <button class="category">Tops</button>
-                    <button class="category">Bottoms</button>
-                    <button class="category">Dresses</button>
-                    <button class="category">Shoes</button>
-                </div>
+    <button type="button" class="category active" data-filter="all">All</button>
+    <button type="button" class="category" data-filter="tops">Tops</button>
+    <button type="button" class="category" data-filter="bottoms">Bottoms</button>
+    <button type="button" class="category" data-filter="dresses">Dresses</button>
+    <button type="button" class="category" data-filter="outerwear">Outerwear</button>
+    <button type="button" class="category" data-filter="shoes">Shoes</button>
+    <button type="button" class="category" data-filter="accessories">Accessories</button>
+    <button type="button" class="category" data-filter="other">Other</button>
+</div>
 
                 
 <div class="clothing-options">
     {% for item in clothing_items %}
-        <button type="button" class="clothing-item" data-item-id="{{ item.id }}" data-category="{{ item.article_type }}">
-            {% if item.final_front_image %}
-                <img src="{{ item.final_front_image.url }}" alt="{{ item.display_name }}">
-            {% elif item.processed_front_image %}
-                <img src="{{ item.processed_front_image.url }}" alt="{{ item.display_name }}">
-            {% elif item.original_front_image %}
-                <img src="{{ item.original_front_image.url }}" alt="{{ item.display_name }}">
-            {% else %}
-                <span>👚</span>
-            {% endif %}
-            <p>{{ item.display_name }}</p>
-        </button>
+        <div class="clothing-card">
+            <button
+                type="button"
+                class="edit-clothing-btn"
+                data-item-id="{{ item.id }}"
+                data-name="{{ item.display_name }}"
+                data-description="{{ item.description }}"
+                data-category="{{ item.category }}"
+                data-article-type="{{ item.article_type }}"
+                data-size="{{ item.size }}"
+                data-update-url="{% url 'update_clothing' item.id %}"
+                data-delete-url="{% url 'delete_clothing' item.id %}"
+                aria-label="Edit {{ item.display_name }}"
+            >
+                <i class="fa-solid fa-pen"></i>
+            </button>
+
+            <button
+                type="button"
+                class="clothing-item"
+                data-item-id="{{ item.id }}"
+                data-category="{{ item.article_type }}"
+            >
+                {% if item.final_front_image %}
+                    <img src="{{ item.final_front_image.url }}" alt="{{ item.display_name }}">
+                {% elif item.processed_front_image %}
+                    <img src="{{ item.processed_front_image.url }}" alt="{{ item.display_name }}">
+                {% elif item.original_front_image %}
+                    <img src="{{ item.original_front_image.url }}" alt="{{ item.display_name }}">
+                {% else %}
+                    <span>👚</span>
+                {% endif %}
+                <p>{{ item.display_name }}</p>
+            </button>
+        </div>
     {% empty %}
         <div class="wardrobe-empty">
             <span>👗</span>
@@ -77,12 +107,25 @@
             <div class="outfit-preview">
 
                 <h3>Your Outfit</h3>
+
 <div class="preview-area" id="outfit-preview">
-    <div class="preview-placeholder" id="preview-placeholder">
-        <span>✨</span>
-        <p>Select pieces from your wardrobe</p>
+    <div class="mannequin-studio" id="mannequin-studio">
+        <div class="mannequin-stage" id="mannequin-stage">
+            <div class="mannequin-body" id="mannequin-body">
+                <div class="mannequin-head"></div>
+                <div class="mannequin-neck"></div>
+                <div class="mannequin-torso"></div>
+                <div class="mannequin-arm mannequin-arm-left"></div>
+                <div class="mannequin-arm mannequin-arm-right"></div>
+                <div class="mannequin-leg mannequin-leg-left"></div>
+                <div class="mannequin-leg mannequin-leg-right"></div>
+            </div>
+            <div class="mannequin-clothing-layer" id="mannequin-clothing-layer"></div>
+        </div>
+        <p class="mannequin-hint">Choose clothing from your wardrobe to style your mannequin ♡</p>
     </div>
 </div>
+
 
 
                 
@@ -169,6 +212,60 @@
 
     </main>
 {% include 'frontend/navbar.html' %}
+<div class="clothing-modal-overlay" id="clothing-edit-modal" hidden>
+    <div class="clothing-modal">
+        <button type="button" class="clothing-modal-close" id="close-clothing-modal" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <span class="clothing-modal-label">YOUR WARDROBE</span>
+        <h2>Edit Your Piece</h2>
+        <p class="clothing-modal-subtitle">Give your wardrobe piece a little update.</p>
+
+        <form id="edit-clothing-form">
+            {% csrf_token %}
+
+            <label for="edit-clothing-name">Clothing Name</label>
+            <input type="text" id="edit-clothing-name" name="name" maxlength="100" required>
+
+            <label for="edit-clothing-description">Description</label>
+            <textarea id="edit-clothing-description" name="description" rows="3"></textarea>
+
+            <label for="edit-clothing-category">Category</label>
+            <select id="edit-clothing-category" name="category">
+                <option value="womens">Women's</option>
+                <option value="mens">Men's</option>
+                <option value="unisex">Unisex</option>
+                <option value="kids">Kids</option>
+            </select>
+
+            <label for="edit-clothing-article-type">Article Type</label>
+            <select id="edit-clothing-article-type" name="article_type">
+                <option value="tops">Tops</option>
+                <option value="bottoms">Bottoms</option>
+                <option value="dresses">Dresses</option>
+                <option value="outerwear">Outerwear</option>
+                <option value="shoes">Shoes</option>
+                <option value="accessories">Accessories</option>
+                <option value="other">Other</option>
+            </select>
+
+            <label for="edit-clothing-size">Size</label>
+            <input type="text" id="edit-clothing-size" name="size" maxlength="20">
+
+            <p id="edit-clothing-status" role="status"></p>
+
+            <button type="submit" class="save-clothing-changes">
+                Save Changes
+            </button>
+
+            <button type="button" class="delete-clothing-action" id="delete-clothing-action">
+                <i class="fa-regular fa-trash-can"></i>
+                Delete Clothing
+            </button>
+        </form>
+    </div>
+</div>
 <script src="{% static 'frontend/js/create_outfit.js' %}" defer></script>
 </body>
 </html>

@@ -1,7 +1,6 @@
 import json
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
-
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
@@ -11,6 +10,7 @@ from .images import InvalidClothingImage, prepare_uploaded_image
 from .models import Clothing, ClothingGalleryImage, default_clothing_transform
 from .services import remove_background_from_upload
 from .tags import normalize_tags
+from django.shortcuts import get_object_or_404
 
 CATEGORY_VALUES = {"womens", "mens", "unisex", "kids"}
 MAX_GALLERY_IMAGES = 12
@@ -272,3 +272,57 @@ def _assign_image(clothing, field_name, uploaded_file, prefix):
         uploaded_file,
         save=False,
     )
+@login_required(login_url="login")
+@require_POST
+def update_clothing(request, clothing_id):
+    clothing = get_object_or_404(
+        Clothing,
+        id=clothing_id,
+        user=request.user
+    )
+
+    display_name = request.POST.get("name", "").strip()
+
+    if not display_name:
+        return JsonResponse(
+            {"error": "Please enter a clothing name."},
+            status=400
+        )
+
+    clothing.display_name = display_name[:100]
+    clothing.description = request.POST.get("description", "").strip()
+    clothing.category = _choice(
+        request.POST.get("category"),
+        CATEGORY_VALUES,
+        clothing.category
+    )
+    clothing.article_type = _choice(
+        request.POST.get("article_type"),
+        ARTICLE_TYPE_VALUES,
+        clothing.article_type
+    )
+    clothing.size = request.POST.get("size", "").strip()[:20]
+
+    clothing.save()
+
+    return JsonResponse({
+        "success": True,
+        "message": "Clothing updated successfully!"
+    })
+
+
+@login_required(login_url="login")
+@require_POST
+def delete_clothing(request, clothing_id):
+    clothing = get_object_or_404(
+        Clothing,
+        id=clothing_id,
+        user=request.user
+    )
+
+    clothing.delete()
+
+    return JsonResponse({
+        "success": True,
+        "message": "Clothing deleted successfully!"
+    })

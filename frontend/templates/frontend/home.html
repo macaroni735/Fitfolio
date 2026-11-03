@@ -1,71 +1,143 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fitfolio | Home</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'frontend/css/home.css' %}">
     <link rel="stylesheet" href="{% static 'frontend/css/navbar.css' %}">
-
+    <link rel="stylesheet" href="{% static 'frontend/css/home.css' %}">
 </head>
+
 <body>
-    <form action="{% url 'logout' %}" method="POST" class="logout-form">
-        {% csrf_token %}
-        <button type="submit" class="logout-button">
-            <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                Logout
-        </button>
-    </form>
+
     <main class="home-container">
 
-    <header class="home-header">
-        <h1>FITFOLIO</h1>
+        <header class="home-header">
+            <div class="header-text">
+                <span class="section-label">YOUR PERSONAL DIGITAL WARDROBE</span>
+                <h1>Good afternoon!</h1>
+            </div>
 
-        <div class="welcome-message">
-            <h2>Welcome!</h2>
-            <p>What are we wearing today?</p>
+            <form action="{% url 'logout' %}" method="POST" class="logout-form">
+                {% csrf_token %}
+                <button type="submit" class="logout-button">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    Logout
+                </button>
+            </form>
+        </header>
+
+        <section class="styling-studio">
+
+            <div class="mannequin-section">
+                <div class="mannequin-heading">
+                    <span class="section-label">THE DAILY EDIT</span>
+                    <h2>Today's Look:</h2>
+                </div>
+
+                
+<div class="mannequin-display">
+    <div class="home-mannequin-stage" id="home-mannequin-stage">
+        <div class="home-mannequin-body">
+            <div class="home-mannequin-head"></div>
+            <div class="home-mannequin-neck"></div>
+            <div class="home-mannequin-torso"></div>
+            <div class="home-mannequin-arm home-mannequin-arm-left"></div>
+            <div class="home-mannequin-arm home-mannequin-arm-right"></div>
+            <div class="home-mannequin-leg home-mannequin-leg-left"></div>
+            <div class="home-mannequin-leg home-mannequin-leg-right"></div>
         </div>
-    </header>
-    <section class="dashboard-content">
 
-    
-<div class="weather-card">
-    <span class="weather-icon" id="weather-icon">🌤️</span>
-    <h3>Today's Weather</h3>
-    <p class="temperature" id="weather-temperature">--°F</p>
-    <p id="weather-description">Loading weather...</p>
-</div>
-
-
-    <div class="outfit-display">
-        <img
-            src="{% static 'frontend/images/mannequin-stage.png' %}"
-            alt="Fitfolio dressing mannequin"
-            class="mannequin-stage"
-        >
+        <div class="home-mannequin-clothing-layer" id="home-mannequin-clothing-layer"></div>
     </div>
-
-    <div class="outfit-card">
-    <span class="outfit-icon">✨</span>
-    <h3>Today's  Recommended Outfit</h3>
-    <p>No outfit selected yet</p>
-    <a href="{% url 'create_outfit' %}">
-        <button type="button">Create an Outfit</button>
-    </a>
 </div>
 
-</section>
-</main>
-{% include 'frontend/navbar.html' %}
-{{ wardrobe_data|json_script:"wardrobe-data" }}
-<script src="{% static 'frontend/js/weather.js' %}" defer></script>
+
+                <div class="mannequin-navigation">
+                    <button type="button" class="look-arrow" aria-label="Previous look">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+
+                    <span class="look-counter">Look 01</span>
+
+                    <button type="button" class="look-arrow" aria-label="Next look">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="styling-panel">
+
+                <div class="styling-intro">
+                    <span class="section-label">CURATED JUST FOR YOU</span>
+                    <h2>A look made just <em>for you.</em></h2>
+                </div>
+
+                <div class="weather-card">
+                    <div class="weather-heading">
+                        <div>
+                            <span class="weather-label">TODAY'S FORECAST</span>
+                            <h3>Today's Weather</h3>
+                        </div>
+                        <span class="weather-icon" id="weather-icon">🌤️</span>
+                    </div>
+
+                    <p class="temperature" id="weather-temperature">--°F</p>
+                    <p id="weather-description">Loading weather...</p>
+                </div>
+
+                <div class="outfit-card">
+                    <span class="section-label">YOUR OUTFIT RECOMMENDATION</span>
+                    <h3>Why this look?</h3>
+                    <p id="outfit-recommendation">
+                        Your personalized outfit recommendation will appear here.
+                    </p>
+                </div>
+
+                <div class="styling-actions">
+                    <button type="button" class="primary-button" id="new-look-button">
+                        <i class="fa-solid fa-rotate"></i>
+                        Try Another Look
+                    </button>
+
+                    <a href="{% url 'create_outfit' %}" class="secondary-button">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        Create Your Own
+                    </a>
+                </div>
+
+            </div>
+
+        </section>
+
+        <section class="wardrobe-preview">
+            <div class="section-heading">
+                <div>
+                    <span class="section-label">YOUR PERSONAL COLLECTION</span>
+                    <h2>From Your Wardrobe</h2>
+                </div>
+            </div>
+
+            <div class="wardrobe-items" id="wardrobe-preview-items">
+                <p>Your clothing collection will appear here.</p>
+            </div>
+        </section>
+
+    </main>
+
+    {% include 'frontend/navbar.html' %}
+
+    {{ wardrobe_data|json_script:"wardrobe-data" }}
+
+    <script src="{% static 'frontend/js/weather.js' %}" defer></script>
+    <script src="{% static 'frontend/js/outfit_recommendations.js' %}" defer></script>
+
 </body>
 </html>
