@@ -1,7 +1,12 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 from . import views
-from clothing.views import create_clothing, process_clothing_image
+from clothing.views import (
+    create_clothing,
+    process_clothing_image,
+    update_clothing,
+    delete_clothing,
+)
 
 urlpatterns = [
     path('', views.landing_view, name='landing'),
@@ -13,6 +18,8 @@ urlpatterns = [
     path('clothing-capture/', views.clothing_capture_view, name='clothing_capture'),
     path('clothing/process-image/', process_clothing_image, name='process_clothing_image'),
     path('clothing/create/', create_clothing, name='create_clothing'),
+    path('clothing/<uuid:clothing_id>/update/', update_clothing, name='update_clothing'),
+    path('clothing/<uuid:clothing_id>/delete/', delete_clothing, name='delete_clothing'),
     path('create-outfit/', views.create_outfit_view, name='create_outfit'),
     path('register/', views.register_view, name='register'),
     path('password-reset/', auth_views.PasswordResetView.as_view(

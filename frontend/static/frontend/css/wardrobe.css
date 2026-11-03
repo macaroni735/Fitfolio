@@ -5,13 +5,11 @@
 body {
     margin: 0;
     min-height: 100vh;
-    background-color: #9EC0EB;
+    background: #FCECF5;
     font-family: 'Poppins', sans-serif;
-    color: #000000;
+    color: #4B4560;
 }
 
-
-/* PAGE */
 
 .wardrobe-container {
     width: 100%;
@@ -21,32 +19,32 @@ body {
 }
 
 
-/* HEADER */
-
 .wardrobe-header {
     text-align: center;
 }
 
 .wardrobe-header h1 {
     margin: 0;
-    font-size: 42px;
-    font-weight: 600;
-    letter-spacing: 2px;
+    font-family: 'Playfair Display', serif;
+    font-size: 46px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    color: #4B4560;
 }
 
 .wardrobe-header h2 {
-    margin: 35px 0 0;
-    font-size: 25px;
-    font-weight: 600;
+    margin: 12px 0 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #D878A8;
 }
 
 .wardrobe-header p {
-    margin-top: 5px;
+    margin-top: 8px;
     font-size: 14px;
+    color: #81798D;
 }
-
-
-/* SEARCH + FILTERS */
 
 .wardrobe-tools {
     margin-top: 35px;
@@ -120,9 +118,6 @@ body {
     background-color: #F1B8D9;
 }
 
-
-/* CLOTHING GRID */
-
 .wardrobe-grid {
     margin-top: 35px;
 
@@ -133,18 +128,13 @@ body {
 }
 
 .clothing-card {
+    position: relative;
     background-color: rgba(255, 255, 255, 0.55);
-
     padding: 18px;
-
     border-radius: 20px;
-
     text-align: center;
-
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.10);
-
-    transition: transform 0.2s ease,
-                box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .clothing-card:hover {
@@ -193,115 +183,6 @@ body {
 }
 
 
-/* BOTTOM NAVIGATION */
-
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-
-    width: 100%;
-    height: 85px;
-
-    background-color: #F1B8D9;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-
-    padding: 0 25px;
-
-    z-index: 1000;
-
-    box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.12);
-}
-
-.nav-item {
-    width: 100px;
-    height: 75px;
-    flex: 0 0 100px;
-
-    color: #000000;
-    text-decoration: none;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    gap: 3px;
-
-    border-radius: 15px;
-
-    font-size: 14px;
-    font-weight: 500;
-
-    transition: all 0.2s ease;
-}
-
-.nav-item:hover {
-    background-color: rgba(255, 255, 255, 0.35);
-
-    transform: translateY(-5px) scale(1.05);
-
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.10);
-}
-
-.nav-icon {
-    font-size: 25px;
-    line-height: 1;
-}
-
-.nav-label {
-    font-size: 12px;
-    text-align: center;
-    line-height: 1.2;
-}
-
-.nav-item.active {
-    font-weight: 600;
-    background-color: rgba(255, 255, 255, 0.25);
-}
-
-
-/* CENTER ADD BUTTON */
-
-.add-button {
-    width: 65px;
-    height: 65px;
-
-    flex-shrink: 0;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    background-color: #A8D5A2;
-    color: #000000;
-
-    border-radius: 50%;
-    text-decoration: none;
-
-    font-size: 38px;
-    font-weight: 400;
-
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-
-    transform: translateY(-15px);
-
-    transition: transform 0.2s ease,
-                box-shadow 0.2s ease;
-}
-
-.add-button:hover {
-    transform: translateY(-22px) scale(1.10);
-
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
-}
-
-
-
-
 @media (max-width: 900px) {
 
     .wardrobe-grid {
@@ -328,7 +209,7 @@ body {
     }
 }
 
-/* Pink Logout Button */
+
 .logout-form {
     position: fixed;
     top: 85px;
@@ -371,5 +252,179 @@ body {
     .logout-button {
         padding: 10px 16px;
         font-size: 12px;
+    }
+}
+
+.wardrobe-grid .edit-clothing-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+    padding: 0;
+
+    background: #FFFCFA;
+    color: #D878A8;
+    border: 1px solid #F1D6E4;
+    border-radius: 50%;
+
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(75, 69, 96, 0.1);
+    transition: all 0.2s ease;
+}
+
+.wardrobe-grid .edit-clothing-btn:hover {
+    background: #D878A8;
+    color: white;
+    transform: scale(1.08);
+}
+
+.wardrobe-grid .clothing-card[hidden] {
+    display: none !important;
+}
+
+
+.clothing-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(75, 69, 96, 0.45);
+    backdrop-filter: blur(5px);
+}
+
+.clothing-modal-overlay[hidden] {
+    display: none !important;
+}
+
+.clothing-modal {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 36px;
+    background: #FFFCFA;
+    border: 1px solid #F1D6E4;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(75, 69, 96, 0.2);
+}
+
+.clothing-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: #FCECF5;
+    color: #4B4560;
+    cursor: pointer;
+}
+
+.clothing-modal-label {
+    color: #D878A8;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+}
+
+.clothing-modal h2 {
+    margin: 8px 0;
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
+    color: #4B4560;
+}
+
+.clothing-modal-subtitle {
+    margin-bottom: 24px;
+    color: #81798D;
+    font-size: 13px;
+}
+
+#edit-clothing-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#edit-clothing-form label {
+    margin-top: 8px;
+    color: #4B4560;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+#edit-clothing-form input,
+#edit-clothing-form textarea,
+#edit-clothing-form select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #EADCE5;
+    border-radius: 12px;
+    background: white;
+    color: #4B4560;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+}
+
+#edit-clothing-form input:focus,
+#edit-clothing-form textarea:focus,
+#edit-clothing-form select:focus {
+    outline: 2px solid #D878A8;
+    outline-offset: 1px;
+}
+
+#edit-clothing-status {
+    margin: 4px 0;
+    font-size: 12px;
+    color: #D878A8;
+}
+
+.save-clothing-changes,
+.delete-clothing-action {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.save-clothing-changes {
+    background: #B8D4B0;
+    color: #4B4560;
+}
+
+.save-clothing-changes:hover {
+    background: #A5C79A;
+}
+
+.delete-clothing-action {
+    background: #FCECF5;
+    color: #B65C78;
+}
+
+.delete-clothing-action:hover {
+    background: #F7DDE9;
+}
+
+@media (max-width: 550px) {
+    .clothing-modal {
+        padding: 26px 20px;
     }
 }

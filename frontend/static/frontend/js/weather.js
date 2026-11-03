@@ -34,59 +34,13 @@ document.addEventListener('DOMContentLoaded', () => {
             descriptionElement.textContent = description;
             iconElement.textContent = icon;
 
-const wardrobeElement = document.getElementById('wardrobe-data');
-
-if (wardrobeElement) {
-    const wardrobe = JSON.parse(wardrobeElement.textContent);
-
-    let recommendedTypes;
-
-    if (temperature >= 80) {
-        recommendedTypes = ['t-shirt', 'shirt', 'shorts', 'skirt', 'dress', 'tank top'];
-    } else if (temperature >= 65) {
-        recommendedTypes = ['shirt', 't-shirt', 'jeans', 'pants', 'dress', 'skirt'];
-    } else if (temperature >= 50) {
-        recommendedTypes = ['sweater', 'hoodie', 'jeans', 'pants', 'jacket'];
-    } else {
-        recommendedTypes = ['coat', 'jacket', 'sweater', 'hoodie', 'pants', 'jeans'];
+document.dispatchEvent(new CustomEvent('fitfolio:weather-ready', {
+    detail: {
+        temperature: temperature,
+        description: description,
+        weatherCode: data.current.weather_code
     }
-
-    const recommendedClothing = wardrobe.filter(item => {
-        const type = (item.article_type || '').toLowerCase();
-        const category = (item.category || '').toLowerCase();
-        const name = (item.name || '').toLowerCase();
-
-        return recommendedTypes.some(keyword =>
-            type.includes(keyword) ||
-            category.includes(keyword) ||
-            name.includes(keyword)
-        );
-    });
-
-    const outfitCard = document.querySelector('.outfit-card');
-
-    if (outfitCard) {
-        const outfitMessage = outfitCard.querySelector('p');
-
-        if (outfitMessage) {
-            if (recommendedClothing.length > 0) {
-                const suggestions = recommendedClothing.slice(0, 3);
-
-                outfitMessage.textContent =
-                    `Perfect for ${temperature}°F: ` +
-                    suggestions.map(item => item.name).join(', ') +
-                    ' ♡';
-            } else if (wardrobe.length === 0) {
-                outfitMessage.textContent =
-                    'Add some clothing to your wardrobe to get outfit recommendations! ♡';
-            } else {
-                outfitMessage.textContent =
-                    'No weather-matching pieces found. Try adding more clothing! ♡';
-            }
-        }
-    }
-}
-
+}));
 
         } catch (error) {
             descriptionElement.textContent = 'Weather unavailable right now';

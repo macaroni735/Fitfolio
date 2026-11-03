@@ -41,15 +41,26 @@ def home_view(request):
         user=request.user
     ).order_by('-created_at')
 
+    
     wardrobe_data = [
         {
             'id': str(item.id),
             'name': item.display_name,
             'article_type': item.article_type or '',
-            'category': item.category or ''
+            'category': item.category or '',
+            'image': (
+                item.final_front_image.url
+                if item.final_front_image
+                else item.processed_front_image.url
+                if item.processed_front_image
+                else item.original_front_image.url
+                if item.original_front_image
+                else ''
+            )
         }
         for item in clothing_items
     ]
+
 
     return render(request, 'frontend/home.html', {
         'clothing_items': clothing_items,
