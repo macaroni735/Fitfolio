@@ -6,11 +6,30 @@ const placeholder = document.getElementById("placeholder");
 const canvas = document.getElementById("canvas");
 const status = document.getElementById("status");
 const cameraFrame = document.getElementById("camera-frame");
+const cameraGuideSlot = document.getElementById("camera-guide-slot");
+const guideTools = document.getElementById("guide-tools");
+const guideRotationInput = document.getElementById("guide-rotation");
+const guideScaleInput = document.getElementById("guide-scale");
+const guideRotationValue = document.getElementById("guide-rotation-value");
+const guideScaleValue = document.getElementById("guide-scale-value");
+const toggleGuideButton = document.getElementById("toggle-guide");
+const resetGuideButton = document.getElementById("reset-guide");
 
 const startButton = document.getElementById("start-camera");
 const takeButton = document.getElementById("take-photo");
+const timerWrap = document.getElementById("timer-wrap");
+const timerToggle = document.getElementById("timer-toggle");
+const timerOptions = document.getElementById("timer-options");
+const timerOverlay = document.getElementById("capture-timer-overlay");
+const timerCount = document.getElementById("capture-timer-count");
 const retakeButton = document.getElementById("retake");
 const uploadInput = document.getElementById("photo-upload");
+const captureControls = document.querySelector(".capture-controls");
+const backCaptureBanner = document.getElementById("back-capture-banner");
+const backToDetailsButton = document.getElementById("back-to-details");
+const flowBackButton = document.getElementById("flow-back");
+const exitDetailsButton = document.getElementById("exit-details");
+const wardrobeUrl = flowBackButton.dataset.wardrobeUrl;
 
 const editorStep = document.getElementById("editor-step");
 const processingStatus = document.getElementById("processing-status");
@@ -51,6 +70,23 @@ const detailsStep = document.getElementById("details-step");
 const detailsPreviewSlot = document.getElementById("details-preview-slot");
 const detailsPreviewImage = document.getElementById("details-preview-image");
 const editPositionButton = document.getElementById("edit-position");
+const addBackButton = document.getElementById("add-back");
+const detailsBackPreview = document.getElementById("details-back-preview");
+const detailsBackSlot = document.getElementById("details-back-slot");
+const detailsBackImage = document.getElementById("details-back-image");
+const editBackButton = document.getElementById("edit-back");
+const retakeBackButton = document.getElementById("retake-back");
+const backPreviewActions = document.getElementById("back-preview-actions");
+const addGalleryButton = document.getElementById("add-gallery");
+const detailsGalleryPreview = document.getElementById("details-gallery-preview");
+const detailsGalleryThumbs = document.getElementById("details-gallery-thumbs");
+const detailsGalleryCount = document.getElementById("details-gallery-count");
+const galleryStep = document.getElementById("gallery-step");
+const galleryStatus = document.getElementById("gallery-status");
+const galleryGrid = document.getElementById("gallery-grid");
+const galleryBackButton = document.getElementById("gallery-back");
+const galleryAddButton = document.getElementById("gallery-add");
+const uploadButton = document.querySelector(".upload-button");
 const clothingDetailsForm = document.getElementById("clothing-details-form");
 const detailsError = document.getElementById("details-error");
 const nameInput = document.getElementById("clothing-name");
@@ -77,6 +113,8 @@ const processImageUrl = captureContainer.dataset.processUrl;
 const createUrl = captureContainer.dataset.createUrl;
 
 let stream = null;
+let captureTimerId = null;
+let captureTimerRemaining = 0;
 let processingRequestId = 0;
 
 // Held in the page until Create saves them.
@@ -98,6 +136,50 @@ const DEFAULT_CLOTHING_TRANSFORM = {
 };
 const clothingTransform = { ...DEFAULT_CLOTHING_TRANSFORM };
 
+function createSideState() {
+    return {
+        images: { original: null, processed: null, final: null },
+        urls: { original: null, processed: null, final: null },
+        transform: { ...DEFAULT_CLOTHING_TRANSFORM },
+    };
+}
+
+const sideState = {
+    front: createSideState(),
+    back: createSideState(),
+};
+let captureSide = "front";
+let committedBack = null;
+let captureMode = "item";
+const MAX_GALLERY_PHOTOS = 12;
+const galleryPhotos = [];
+let galleryDraftBlob = null;
+let galleryDraftUrl = null;
+let openGalleryGridAfterCapture = false;
+let hasReachedDetails = false;
+let flowBackAction = null;
+const GALLERY_PREVIEW_COUNT = 4;
+const ALLOWED_IMAGE_TYPES = new Set([
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+]);
+const MAX_IMAGE_DIMENSION = 1600;
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+
+const DEFAULT_GUIDE_TRANSFORM = {
+    x: 0.5,
+    y: 0.5,
+    rotation: 0,
+    scale: 1,
+};
+const guideTransform = { ...DEFAULT_GUIDE_TRANSFORM };
+let guideVisible = true;
+let isMovingGuide = false;
+let guideDragOffsetX = 0;
+let guideDragOffsetY = 0;
+
 const clothingTags = [];
 
 captureContainer.clothingImages = clothingImages;
@@ -110,19 +192,420 @@ const imagePreviewUrls = {
     final: null,
 };
 
-function replaceImage(role, blob) {
-    if (imagePreviewUrls[role]) {
-        URL.revokeObjectURL(imagePreviewUrls[role]);
-        imagePreviewUrls[role] = null;
+function cloneSide(side) {
+    return {
+        images: { ...side.images },
+        urls: { ...side.urls },
+        transform: { ...side.transform },
+    };
+}
+
+function rememberCommittedBack() {
+    if (sideState.back.urls.final) {
+        committedBack = cloneSide(sideState.back);
     }
+}
+
+function urlIsKept(url) {
+    if (!url) {
+        return false;
+    }
+
+    const sources = [sideState.front, sideState.back];
+    if (committedBack) {
+        sources.push(committedBack);
+    }
+
+    return sources.some(side =>
+        side.urls.original === url ||
+        side.urls.processed === url ||
+        side.urls.final === url
+    );
+}
+
+function persistActiveSide() {
+    const side = sideState[captureSide];
+    side.images.original = clothingImages.original;
+    side.images.processed = clothingImages.processed;
+    side.images.final = clothingImages.final;
+    side.urls.original = imagePreviewUrls.original;
+    side.urls.processed = imagePreviewUrls.processed;
+    side.urls.final = imagePreviewUrls.final;
+    side.transform = { ...clothingTransform };
+}
+
+function applyLiveFrom(sideName) {
+    const side = sideState[sideName];
+    clothingImages.original = side.images.original;
+    clothingImages.processed = side.images.processed;
+    clothingImages.final = side.images.final;
+    imagePreviewUrls.original = side.urls.original;
+    imagePreviewUrls.processed = side.urls.processed;
+    imagePreviewUrls.final = side.urls.final;
+    Object.assign(clothingTransform, side.transform);
+}
+
+function activateSide(sideName) {
+    persistActiveSide();
+    if (captureSide === sideName) {
+        return;
+    }
+
+    captureSide = sideName;
+    applyLiveFrom(sideName);
+}
+
+function capturingBack() {
+    return captureMode === "item" && captureSide === "back";
+}
+
+function capturingGalleryPhotos() {
+    return captureMode === "gallery";
+}
+
+function capturePromptKind() {
+    if (capturingGalleryPhotos()) {
+        return "gallery";
+    }
+    if (capturingBack()) {
+        return "back";
+    }
+    return "front";
+}
+
+function setGalleryDraft(blob) {
+    if (galleryDraftUrl && !galleryPhotos.some(photo => photo.url === galleryDraftUrl)) {
+        URL.revokeObjectURL(galleryDraftUrl);
+    }
+
+    galleryDraftBlob = blob;
+    galleryDraftUrl = blob ? URL.createObjectURL(blob) : null;
+}
+
+function clearGalleryDraft() {
+    setGalleryDraft(null);
+}
+
+function addGalleryPhoto(blob) {
+    if (!blob || galleryPhotos.length >= MAX_GALLERY_PHOTOS) {
+        return;
+    }
+
+    galleryPhotos.push({
+        blob,
+        url: URL.createObjectURL(blob),
+    });
+}
+
+function commitGalleryDraft() {
+    if (!galleryDraftBlob) {
+        status.textContent = "Take or upload a photo first.";
+        return;
+    }
+
+    if (galleryPhotos.length >= MAX_GALLERY_PHOTOS) {
+        status.textContent = `You can add up to ${MAX_GALLERY_PHOTOS} extra photos.`;
+        return;
+    }
+
+    galleryPhotos.push({
+        blob: galleryDraftBlob,
+        url: galleryDraftUrl,
+    });
+    galleryDraftBlob = null;
+    galleryDraftUrl = null;
+    finishGalleryCapture();
+}
+
+function finishGalleryCapture() {
+    captureMode = "item";
+    hideCaptureChrome();
+    if (openGalleryGridAfterCapture && galleryPhotos.length) {
+        showGalleryStep();
+        return;
+    }
+    showDetailsStep();
+}
+
+function removeGalleryPhoto(index) {
+    const [photo] = galleryPhotos.splice(index, 1);
+    if (photo?.url) {
+        URL.revokeObjectURL(photo.url);
+    }
+
+    if (!galleryPhotos.length) {
+        showDetailsStep();
+        return;
+    }
+
+    renderGalleryGrid();
+    updateGalleryPreview();
+}
+
+function updateGalleryPreview() {
+    const hasPhotos = galleryPhotos.length > 0;
+    addGalleryButton.hidden = hasPhotos;
+    detailsGalleryPreview.hidden = !hasPhotos;
+
+    detailsGalleryThumbs.replaceChildren();
+    if (!hasPhotos) {
+        detailsGalleryCount.hidden = true;
+        return;
+    }
+
+    const thumbs = galleryPhotos.slice(0, GALLERY_PREVIEW_COUNT);
+    thumbs.forEach(photo => {
+        const image = document.createElement("img");
+        image.src = photo.url;
+        image.alt = "";
+        image.draggable = false;
+        detailsGalleryThumbs.append(image);
+    });
+    detailsGalleryThumbs.dataset.count = String(thumbs.length);
+
+    detailsGalleryCount.textContent = String(galleryPhotos.length);
+    detailsGalleryCount.hidden = galleryPhotos.length < 5;
+}
+
+function renderGalleryGrid() {
+    galleryGrid.replaceChildren();
+
+    galleryPhotos.forEach((photo, index) => {
+        const tile = document.createElement("div");
+        tile.className = "gallery-tile";
+
+        const image = document.createElement("img");
+        image.src = photo.url;
+        image.alt = `Gallery photo ${index + 1}`;
+
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.className = "gallery-remove";
+        removeButton.setAttribute("aria-label", `Remove photo ${index + 1}`);
+        removeButton.textContent = "X";
+        removeButton.addEventListener("click", event => {
+            event.stopPropagation();
+            removeGalleryPhoto(index);
+        });
+
+        tile.append(image, removeButton);
+        galleryGrid.append(tile);
+    });
+
+    if (galleryPhotos.length < MAX_GALLERY_PHOTOS) {
+        const addTile = document.createElement("button");
+        addTile.type = "button";
+        addTile.className = "gallery-add-tile";
+        const addIcon = document.createElement("span");
+        addIcon.className = "details-back-prompt-icon";
+        addIcon.setAttribute("aria-hidden", "true");
+        addIcon.textContent = "+";
+        const addLabel = document.createElement("span");
+        addLabel.textContent = "Add";
+        addTile.append(addIcon, addLabel);
+        addTile.addEventListener("click", () => {
+            startGalleryCapture({ fromGrid: true });
+        });
+        galleryGrid.append(addTile);
+    }
+}
+
+function showGalleryStep() {
+    persistActiveSide();
+    captureMode = "item";
+    editorStep.hidden = true;
+    cleanupStep.hidden = true;
+    positionStep.hidden = true;
+    detailsStep.hidden = true;
+    hideCaptureChrome();
+    galleryStep.hidden = false;
+    galleryStatus.textContent = "Extra photos of this item.";
+    renderGalleryGrid();
+    updateSideUi();
+}
+
+function hideCaptureChrome() {
+    hideCaptureTimerUi();
+    stopCamera();
+    hideGuideTools();
+    cameraFrame.hidden = true;
+    captureControls.hidden = true;
+    status.hidden = true;
+}
+
+function showCaptureChrome() {
+    cameraFrame.hidden = false;
+    captureControls.hidden = false;
+    status.hidden = false;
+}
+
+function updateSideUi() {
+    const onDetails = !detailsStep.hidden;
+    const onCapture =
+        detailsStep.hidden &&
+        editorStep.hidden &&
+        cleanupStep.hidden &&
+        positionStep.hidden &&
+        galleryStep.hidden;
+    const extraCapture = capturingBack() || capturingGalleryPhotos();
+
+    if (capturingGalleryPhotos()) {
+        backCaptureBanner.textContent = "Add extra photos of this item.";
+        continueButton.textContent = "Add photo";
+        uploadButton.textContent = "Upload Photos";
+        uploadInput.multiple = true;
+    } else {
+        backCaptureBanner.textContent = "Adding the back of this item.";
+        continueButton.textContent = "Next";
+        uploadButton.textContent = "Upload Photo";
+        uploadInput.multiple = false;
+    }
+
+    backCaptureBanner.hidden = !(extraCapture && !onDetails);
+    backToDetailsButton.hidden = true;
+    updateFlowNav();
+}
+
+const LEAVE_WARNING = "Are you sure you want to leave? Unsaved data may be lost.";
+let ignoreLeaveWarning = false;
+let hasLeftFirstCaptureStep = false;
+
+function isPastFirstCaptureStep() {
+    return hasLeftFirstCaptureStep
+        || !editorStep.hidden
+        || !cleanupStep.hidden
+        || !positionStep.hidden
+        || !detailsStep.hidden
+        || !galleryStep.hidden
+        || capturingBack()
+        || capturingGalleryPhotos()
+        || hasReachedDetails
+        || Boolean(clothingImages.processed || clothingImages.final);
+}
+
+function confirmLeavePage() {
+    if (ignoreLeaveWarning || !isPastFirstCaptureStep()) {
+        return true;
+    }
+
+    return window.confirm(LEAVE_WARNING);
+}
+
+function leaveTo(url) {
+    if (!confirmLeavePage()) {
+        return;
+    }
+
+    ignoreLeaveWarning = true;
+    window.location.href = url;
+}
+
+function goToWardrobe() {
+    leaveTo(wardrobeUrl);
+}
+
+function updateFlowNav() {
+    const onDetails = !detailsStep.hidden;
+    exitDetailsButton.hidden = !onDetails;
+    flowBackButton.hidden = onDetails;
+
+    if (onDetails) {
+        flowBackAction = null;
+        return;
+    }
+
+    if (!editorStep.hidden) {
+        flowBackButton.textContent = "← Photo";
+        flowBackAction = showCaptureStep;
+        return;
+    }
+
+    if (!cleanupStep.hidden) {
+        flowBackButton.textContent = "← Photo";
+        flowBackAction = showCaptureFromCleanup;
+        return;
+    }
+
+    if (!positionStep.hidden) {
+        flowBackButton.textContent = "← Cleanup";
+        flowBackAction = showCleanupFromPosition;
+        return;
+    }
+
+    if (!galleryStep.hidden) {
+        flowBackButton.textContent = "← Details";
+        flowBackAction = showDetailsStep;
+        return;
+    }
+
+    if (capturingGalleryPhotos()) {
+        flowBackButton.textContent = openGalleryGridAfterCapture
+            ? "← Gallery"
+            : "← Details";
+        flowBackAction = cancelCaptureToDetails;
+        return;
+    }
+
+    if (capturingBack() || hasReachedDetails) {
+        flowBackButton.textContent = "← Details";
+        flowBackAction = capturingBack() ? cancelCaptureToDetails : showDetailsStep;
+        return;
+    }
+
+    flowBackButton.textContent = "← My Wardrobe";
+    flowBackAction = goToWardrobe;
+}
+
+function cleanupPrompt() {
+    return capturingBack()
+        ? "Erase leftover background or extra details from the back."
+        : "Erase any leftover background or extra details.";
+}
+
+function positionPrompt() {
+    return capturingBack()
+        ? "Line the back of the clothing up with the mannequin. Drag to move, then adjust rotation and scale."
+        : "Line the clothing up with the mannequin. Drag to move, then adjust rotation and scale.";
+}
+
+function resetCaptureUiForNewPhoto() {
+    stopCamera();
+    preview.removeAttribute("src");
+    preview.hidden = true;
+    video.hidden = true;
+    placeholder.hidden = false;
+    const kind = capturePromptKind();
+    placeholder.textContent =
+        kind === "gallery"
+            ? "A gallery photo will appear here."
+            : kind === "back"
+                ? "A photo of the back of this item will appear here."
+                : "Your camera preview will appear here.";
+    retakeButton.hidden = true;
+    setTakePhotoVisible(false);
+    continueButton.hidden = true;
+    startButton.hidden = false;
+    uploadInput.value = "";
+    showCaptureChrome();
+    status.textContent =
+        kind === "gallery"
+            ? "Take a photo for the gallery, or upload one."
+            : kind === "back"
+                ? "Take a photo of the back of this item, or upload one."
+                : "Choose camera or upload a photo.";
+    showGuideTools();
+}
+
+function replaceImage(role, blob) {
+    const previousUrl = imagePreviewUrls[role];
 
     clothingImages[role] = blob;
+    imagePreviewUrls[role] = blob ? URL.createObjectURL(blob) : null;
 
-    if (!blob) {
-        return null;
+    if (previousUrl && previousUrl !== imagePreviewUrls[role] && !urlIsKept(previousUrl)) {
+        URL.revokeObjectURL(previousUrl);
     }
 
-    imagePreviewUrls[role] = URL.createObjectURL(blob);
     return imagePreviewUrls[role];
 }
 
@@ -136,6 +619,107 @@ function resetClothingTransform() {
     clothingTransform.y = DEFAULT_CLOTHING_TRANSFORM.y;
     clothingTransform.rotation = DEFAULT_CLOTHING_TRANSFORM.rotation;
     clothingTransform.scale = DEFAULT_CLOTHING_TRANSFORM.scale;
+}
+
+function isAllowedImageFile(file) {
+    const type = (file.type || "").toLowerCase();
+    if (ALLOWED_IMAGE_TYPES.has(type)) {
+        return true;
+    }
+
+    if (type && !type.startsWith("image/")) {
+        return false;
+    }
+
+    return /\.(jpe?g|png|webp)$/i.test(file.name || "");
+}
+
+function loadImageElement(blob) {
+    const url = URL.createObjectURL(blob);
+    const image = new Image();
+    image.src = url;
+
+    return image.decode().then(() => {
+        URL.revokeObjectURL(url);
+        return image;
+    }).catch(error => {
+        URL.revokeObjectURL(url);
+        throw error;
+    });
+}
+
+function canvasToBlob(sourceCanvas, type, quality) {
+    return new Promise((resolve, reject) => {
+        sourceCanvas.toBlob(blob => {
+            if (blob) {
+                resolve(blob);
+                return;
+            }
+            reject(new Error("Couldn't process the image. Please try another photo."));
+        }, type, quality);
+    });
+}
+
+async function prepareImageFile(file) {
+    if (!file) {
+        throw new Error("Please choose an image file.");
+    }
+
+    if (!isAllowedImageFile(file)) {
+        throw new Error("Please upload a JPEG, PNG, or WebP image.");
+    }
+
+    let image;
+    try {
+        image = await loadImageElement(file);
+    } catch {
+        throw new Error("Please upload a valid image.");
+    }
+
+    const maxSide = Math.max(image.naturalWidth, image.naturalHeight);
+    const scale = maxSide > MAX_IMAGE_DIMENSION
+        ? MAX_IMAGE_DIMENSION / maxSide
+        : 1;
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const type = (file.type || "").toLowerCase();
+    const needsResize = scale < 1;
+    const tooHeavy = file.size > MAX_IMAGE_BYTES;
+
+    if (!needsResize && !tooHeavy) {
+        return file;
+    }
+
+    const drawCanvas = document.createElement("canvas");
+    drawCanvas.width = width;
+    drawCanvas.height = height;
+    drawCanvas.getContext("2d").drawImage(image, 0, 0, width, height);
+
+    const preferPng = type === "image/png" || type === "image/webp" || !type;
+    let blob = await canvasToBlob(
+        drawCanvas,
+        preferPng ? "image/png" : "image/jpeg",
+        0.92,
+    );
+
+    if (blob.size > MAX_IMAGE_BYTES) {
+        for (const quality of [0.85, 0.75, 0.65, 0.55, 0.45]) {
+            blob = await canvasToBlob(drawCanvas, "image/jpeg", quality);
+            if (blob.size <= MAX_IMAGE_BYTES) {
+                break;
+            }
+        }
+    }
+
+    if (blob.size > MAX_IMAGE_BYTES) {
+        throw new Error(
+            "That image is still too large after resizing. Please try a smaller photo.",
+        );
+    }
+
+    const extension = blob.type === "image/png" ? "png" : "jpg";
+    const baseName = (file.name || "photo").replace(/\.[^.]+$/, "") || "photo";
+    return new File([blob], `${baseName}.${extension}`, { type: blob.type });
 }
 
 function setOriginalImage(blob) {
@@ -159,6 +743,70 @@ function setFinalImage(blob) {
     }
 }
 
+function setTakePhotoVisible(visible) {
+    takeButton.hidden = !visible;
+    timerWrap.hidden = !visible;
+    if (!visible) {
+        hideCaptureTimerUi();
+    }
+}
+
+function isCaptureTimerRunning() {
+    return captureTimerId !== null;
+}
+
+function hideCaptureTimerUi() {
+    if (captureTimerId !== null) {
+        window.clearInterval(captureTimerId);
+        captureTimerId = null;
+    }
+
+    captureTimerRemaining = 0;
+    timerOverlay.hidden = true;
+    timerOptions.hidden = true;
+    timerToggle.textContent = "Timer";
+    timerToggle.setAttribute("aria-expanded", "false");
+    takeButton.disabled = false;
+}
+
+function cancelCaptureTimer() {
+    const wasRunning = isCaptureTimerRunning();
+    hideCaptureTimerUi();
+
+    if (wasRunning && !video.hidden && stream) {
+        status.textContent = "Timer canceled. Take a photo when you're ready.";
+    }
+}
+
+function startCaptureTimer(seconds) {
+    if (!video.videoWidth || !video.videoHeight) {
+        status.textContent = "The camera is not ready yet. Try again in a moment.";
+        return;
+    }
+
+    hideCaptureTimerUi();
+    captureTimerRemaining = seconds;
+    timerOverlay.hidden = false;
+    timerCount.textContent = String(seconds);
+    takeButton.disabled = true;
+    timerToggle.textContent = "Cancel";
+    timerToggle.setAttribute("aria-expanded", "false");
+    status.textContent = `Taking photo in ${seconds}...`;
+
+    captureTimerId = window.setInterval(() => {
+        captureTimerRemaining -= 1;
+
+        if (captureTimerRemaining <= 0) {
+            hideCaptureTimerUi();
+            captureFromCamera();
+            return;
+        }
+
+        timerCount.textContent = String(captureTimerRemaining);
+        status.textContent = `Taking photo in ${captureTimerRemaining}...`;
+    }, 1000);
+}
+
 function stopCamera() {
     if (stream) {
         stream.getTracks().forEach(track => track.stop());
@@ -166,7 +814,7 @@ function stopCamera() {
     }
 
     video.srcObject = null;
-    takeButton.hidden = true;
+    setTakePhotoVisible(false);
 }
 
 function showPreview(imageUrl) {
@@ -174,21 +822,27 @@ function showPreview(imageUrl) {
     preview.hidden = false;
     video.hidden = true;
     placeholder.hidden = true;
-    mannequinGuide.hidden = false;
 
     retakeButton.hidden = false;
-    takeButton.hidden = true;
+    setTakePhotoVisible(false);
     startButton.hidden = true;
     continueButton.hidden = false;
 
+    const kind = capturePromptKind();
     status.textContent =
-        "Photo ready for the next step. You can retake or upload another image.";
+        kind === "gallery"
+            ? "Photo ready to add. You can retake or upload another image."
+            : kind === "back"
+                ? "Back photo ready for the next step. You can retake or upload another image."
+                : "Photo ready for the next step. You can retake or upload another image.";
 
+    showGuideTools();
     stopCamera();
 }
 
 startButton.addEventListener("click", async () => {
     cameraFrame.hidden = false;
+    showGuideTools();
     if (!navigator.mediaDevices?.getUserMedia) {
         status.textContent =
             "Camera access is unavailable here. Please upload a photo instead.";
@@ -207,23 +861,28 @@ startButton.addEventListener("click", async () => {
         video.hidden = false;
         preview.hidden = true;
         placeholder.hidden = true;
-        mannequinGuide.hidden = false;
 
-        takeButton.hidden = false;
+        setTakePhotoVisible(true);
         takeButton.disabled = false;
         retakeButton.hidden = true;
         startButton.hidden = true;
         continueButton.hidden = true;
 
+        const kind = capturePromptKind();
         status.textContent =
-            "Position the clothing item in view, then take a photo.";
+            kind === "gallery"
+                ? "Take a photo for the gallery."
+                : kind === "back"
+                    ? "Position the back of the clothing item in view, then take a photo. You can readjust later."
+                    : "Position the clothing item in view, then take a photo. You can readjust later.";
+        showGuideTools();
     } catch (error) {
         status.textContent =
             "Couldn't access the camera. Check browser permissions or upload a photo.";
     }
 });
 
-takeButton.addEventListener("click", () => {
+function captureFromCamera() {
     if (!video.videoWidth || !video.videoHeight) {
         status.textContent = "The camera is not ready yet. Try again in a moment.";
         return;
@@ -235,41 +894,129 @@ takeButton.addEventListener("click", () => {
     const context = canvas.getContext("2d");
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    canvas.toBlob(blob => {
+    canvas.toBlob(async blob => {
         if (!blob) {
             status.textContent = "Couldn't capture the image. Please try again.";
             return;
         }
 
-        setOriginalImage(blob);
-        showPreview(imagePreviewUrls.original);
+        try {
+            const prepared = await prepareImageFile(blob);
+            if (capturingGalleryPhotos()) {
+                setGalleryDraft(prepared);
+                showPreview(galleryDraftUrl);
+                return;
+            }
+
+            setOriginalImage(prepared);
+            showPreview(imagePreviewUrls.original);
+        } catch (error) {
+            status.textContent = error.message ||
+                "Couldn't capture the image. Please try again.";
+        }
     }, "image/png");
+}
+
+takeButton.addEventListener("click", () => {
+    if (isCaptureTimerRunning()) {
+        return;
+    }
+
+    captureFromCamera();
 });
 
-uploadInput.addEventListener("change", () => {
-    const file = uploadInput.files[0];
-    if (!file) return;
+timerToggle.addEventListener("click", () => {
+    if (isCaptureTimerRunning()) {
+        cancelCaptureTimer();
+        return;
+    }
 
-    if (!file.type.startsWith("image/")) {
-        status.textContent = "Please choose an image file.";
+    const open = timerOptions.hidden;
+    timerOptions.hidden = !open;
+    timerToggle.setAttribute("aria-expanded", open ? "true" : "false");
+});
+
+timerOptions.addEventListener("click", event => {
+    const option = event.target.closest("button[data-seconds]");
+    if (!option) {
+        return;
+    }
+
+    const seconds = Number(option.dataset.seconds);
+    if (seconds === 3 || seconds === 5) {
+        startCaptureTimer(seconds);
+    }
+});
+
+document.addEventListener("click", event => {
+    if (timerWrap.hidden || timerOptions.hidden || isCaptureTimerRunning()) {
+        return;
+    }
+
+    if (timerWrap.contains(event.target)) {
+        return;
+    }
+
+    timerOptions.hidden = true;
+    timerToggle.setAttribute("aria-expanded", "false");
+});
+
+uploadInput.addEventListener("change", async () => {
+    const files = [...uploadInput.files];
+    if (!files.length) {
+        return;
+    }
+
+    const images = files.filter(isAllowedImageFile);
+    if (!images.length) {
+        status.textContent = "Please upload a JPEG, PNG, or WebP image.";
         uploadInput.value = "";
         return;
     }
 
-    setOriginalImage(file);
-    cameraFrame.hidden = false;
-    showPreview(imagePreviewUrls.original);
+    try {
+        if (capturingGalleryPhotos() && images.length > 1) {
+            const remaining = MAX_GALLERY_PHOTOS - galleryPhotos.length;
+            for (const file of images.slice(0, remaining)) {
+                addGalleryPhoto(await prepareImageFile(file));
+            }
+            uploadInput.value = "";
+            finishGalleryCapture();
+            return;
+        }
+
+        const prepared = await prepareImageFile(images[0]);
+        if (capturingGalleryPhotos()) {
+            setGalleryDraft(prepared);
+            cameraFrame.hidden = false;
+            showPreview(galleryDraftUrl);
+            uploadInput.value = "";
+            return;
+        }
+
+        setOriginalImage(prepared);
+        cameraFrame.hidden = false;
+        showPreview(imagePreviewUrls.original);
+        uploadInput.value = "";
+    } catch (error) {
+        status.textContent = error.message || "Please upload a valid image.";
+        uploadInput.value = "";
+    }
 });
 
 retakeButton.addEventListener("click", async () => {
-    setOriginalImage(null);
+    if (capturingGalleryPhotos()) {
+        clearGalleryDraft();
+    } else {
+        setOriginalImage(null);
+    }
 
     preview.removeAttribute("src");
     preview.hidden = true;
     uploadInput.value = "";
 
     retakeButton.hidden = true;
-    takeButton.hidden = true;
+    setTakePhotoVisible(false);
     startButton.hidden = false;
 
     status.textContent = "Reopening camera...";
@@ -279,26 +1026,152 @@ retakeButton.addEventListener("click", async () => {
 
 window.addEventListener("pagehide", stopCamera);
 
+function resetGuideTransform() {
+    guideTransform.x = DEFAULT_GUIDE_TRANSFORM.x;
+    guideTransform.y = DEFAULT_GUIDE_TRANSFORM.y;
+    guideTransform.rotation = DEFAULT_GUIDE_TRANSFORM.rotation;
+    guideTransform.scale = DEFAULT_GUIDE_TRANSFORM.scale;
+}
+
+function applyGuideTransform() {
+    applySlotTransform(cameraGuideSlot, guideTransform);
+}
+
+function syncGuideControls() {
+    guideRotationInput.value = String(Math.round(guideTransform.rotation));
+    guideScaleInput.value = String(Math.round(guideTransform.scale * 100));
+    guideRotationValue.textContent = `${Math.round(guideTransform.rotation)}°`;
+    guideScaleValue.textContent = `${Math.round(guideTransform.scale * 100)}%`;
+}
+
+function applyGuideVisibility() {
+    cameraGuideSlot.hidden = !guideVisible;
+    toggleGuideButton.textContent = guideVisible ? "Hide Guide" : "Show Guide";
+}
+
+function showGuideTools() {
+    if (capturingGalleryPhotos()) {
+        hideGuideTools();
+        cameraGuideSlot.hidden = true;
+        return;
+    }
+
+    guideTools.hidden = false;
+    applyGuideVisibility();
+    applyGuideTransform();
+    syncGuideControls();
+}
+
+function hideGuideTools() {
+    isMovingGuide = false;
+    guideTools.hidden = true;
+}
+
+cameraGuideSlot.addEventListener("pointerdown", event => {
+    if (!guideVisible || event.button) {
+        return;
+    }
+
+    event.preventDefault();
+    cameraGuideSlot.setPointerCapture(event.pointerId);
+    isMovingGuide = true;
+
+    const frameRect = cameraFrame.getBoundingClientRect();
+    guideDragOffsetX =
+        event.clientX - (frameRect.left + guideTransform.x * frameRect.width);
+    guideDragOffsetY =
+        event.clientY - (frameRect.top + guideTransform.y * frameRect.height);
+});
+
+cameraGuideSlot.addEventListener("pointermove", event => {
+    if (!isMovingGuide) {
+        return;
+    }
+
+    const frameRect = cameraFrame.getBoundingClientRect();
+    guideTransform.x = roundTransform(clamp(
+        (event.clientX - guideDragOffsetX - frameRect.left) / frameRect.width,
+        -0.25,
+        1.25,
+    ));
+    guideTransform.y = roundTransform(clamp(
+        (event.clientY - guideDragOffsetY - frameRect.top) / frameRect.height,
+        -0.25,
+        1.25,
+    ));
+    applyGuideTransform();
+});
+
+function stopMovingGuide() {
+    isMovingGuide = false;
+}
+
+cameraGuideSlot.addEventListener("pointerup", stopMovingGuide);
+cameraGuideSlot.addEventListener("pointercancel", stopMovingGuide);
+
+cameraFrame.addEventListener("wheel", event => {
+    if (capturingGalleryPhotos()) {
+        return;
+    }
+
+    event.preventDefault();
+    guideTransform.scale = clamp(guideTransform.scale + (event.deltaY > 0 ? -0.05 : 0.05), 0.2, 2.5);
+    applyGuideTransform();
+    syncGuideControls();
+}, { passive: false });
+
+guideRotationInput.addEventListener("input", () => {
+    guideTransform.rotation = Number(guideRotationInput.value);
+    applyGuideTransform();
+    syncGuideControls();
+});
+
+guideScaleInput.addEventListener("input", () => {
+    guideTransform.scale = Number(guideScaleInput.value) / 100;
+    applyGuideTransform();
+    syncGuideControls();
+});
+
+toggleGuideButton.addEventListener("click", () => {
+    guideVisible = !guideVisible;
+    applyGuideVisibility();
+});
+
+resetGuideButton.addEventListener("click", () => {
+    guideVisible = true;
+    resetGuideTransform();
+    applyGuideVisibility();
+    applyGuideTransform();
+    syncGuideControls();
+});
+
 
 // Background removal
 
 function showEditorStep() {
-    stopCamera();
+    hasLeftFirstCaptureStep = true;
 
-    cameraFrame.hidden = true;
-    document.querySelector(".capture-controls").hidden = true;
-    status.hidden = true;
+    if (capturingGalleryPhotos()) {
+        commitGalleryDraft();
+        return;
+    }
+
+    hideCaptureChrome();
     cleanupStep.hidden = true;
     positionStep.hidden = true;
     detailsStep.hidden = true;
+    galleryStep.hidden = true;
 
     editorStep.hidden = false;
     editorError.hidden = true;
     retryProcessingButton.hidden = true;
 
     processedPreview.src = imagePreviewUrls.original;
-    processedPreview.alt = "Original clothing photo";
+    processedPreview.alt = capturingBack()
+        ? "Original back photo"
+        : "Original clothing photo";
     editorWorkspace.hidden = false;
+    updateSideUi();
 
     processCapturedImage();
 }
@@ -310,9 +1183,15 @@ function showCaptureStep() {
     positionStep.hidden = true;
     cleanupStep.hidden = true;
     editorStep.hidden = true;
-    cameraFrame.hidden = false;
-    document.querySelector(".capture-controls").hidden = false;
-    status.hidden = false;
+    galleryStep.hidden = true;
+    showCaptureChrome();
+    showGuideTools();
+
+    if (imagePreviewUrls.original) {
+        showPreview(imagePreviewUrls.original);
+    }
+
+    updateSideUi();
 }
 
 async function processCapturedImage() {
@@ -397,7 +1276,16 @@ retryProcessingButton.addEventListener("click", processCapturedImage);
 
 backToCaptureButton.addEventListener("click", showCaptureStep);
 
-continueButton.addEventListener("click", showEditorStep);
+function continueFromCapture() {
+    if (capturingGalleryPhotos()) {
+        commitGalleryDraft();
+        return;
+    }
+
+    showEditorStep();
+}
+
+continueButton.addEventListener("click", continueFromCapture);
 
 
 // Manual cleanup
@@ -519,6 +1407,7 @@ async function loadCleanupCanvas() {
 
     cleanupCanvas.width = image.naturalWidth;
     cleanupCanvas.height = image.naturalHeight;
+    cleanupCanvas.style.aspectRatio = `${image.naturalWidth} / ${image.naturalHeight}`;
     cleanupContext.clearRect(0, 0, cleanupCanvas.width, cleanupCanvas.height);
     cleanupContext.drawImage(image, 0, 0);
 
@@ -538,14 +1427,17 @@ async function showCleanupStep() {
     detailsStep.hidden = true;
     positionStep.hidden = true;
     editorStep.hidden = true;
+    galleryStep.hidden = true;
     cleanupStep.hidden = false;
+    updateSideUi();
 
     if (cleanupReady && loadedProcessedUrl === imagePreviewUrls.processed) {
+        cleanupStatus.textContent = cleanupPrompt();
         return;
     }
 
     cleanupReady = false;
-    cleanupStatus.textContent = "Erase any leftover background or extra details.";
+    cleanupStatus.textContent = cleanupPrompt();
 
     try {
         await loadCleanupCanvas();
@@ -575,7 +1467,7 @@ function undoCleanup() {
 async function resetCleanup() {
     try {
         await loadCleanupCanvas();
-        cleanupStatus.textContent = "Erase any leftover background or extra details.";
+        cleanupStatus.textContent = cleanupPrompt();
     } catch (error) {
         cleanupStatus.textContent = error.message ||
             "Couldn't reset the image. Please go back and try again.";
@@ -742,14 +1634,18 @@ function roundTransform(value) {
 const MANNEQUIN_SLOT_WIDTH = 0.7;
 const MANNEQUIN_SLOT_HEIGHT = 0.9;
 
-function applyClothingTransform(slot) {
+function applySlotTransform(slot, transform) {
     const shiftX =
-        ((clothingTransform.x - 0.5) / MANNEQUIN_SLOT_WIDTH) * 100;
+        ((transform.x - 0.5) / MANNEQUIN_SLOT_WIDTH) * 100;
     const shiftY =
-        ((clothingTransform.y - 0.5) / MANNEQUIN_SLOT_HEIGHT) * 100;
+        ((transform.y - 0.5) / MANNEQUIN_SLOT_HEIGHT) * 100;
 
     slot.style.transform =
-        `translate(${shiftX}%, ${shiftY}%) rotate(${clothingTransform.rotation}deg) scale(${clothingTransform.scale})`;
+        `translate(${shiftX}%, ${shiftY}%) rotate(${transform.rotation}deg) scale(${transform.scale})`;
+}
+
+function applyClothingTransform(slot) {
+    applySlotTransform(slot, clothingTransform);
 }
 
 function applyPositionTransform() {
@@ -771,18 +1667,18 @@ function showPositionStep() {
 
     detailsStep.hidden = true;
     cleanupStep.hidden = true;
+    galleryStep.hidden = true;
     positionStep.hidden = false;
-    positionStatus.textContent =
-        "Line the clothing up with the mannequin. Drag to move, then adjust rotation and scale.";
+    positionStatus.textContent = positionPrompt();
     positionImage.src = imagePreviewUrls.final;
     applyPositionTransform();
     syncPositionControls();
+    updateSideUi();
 }
 
 function showCleanupFromPosition() {
     isPositioning = false;
-    positionStep.hidden = true;
-    cleanupStep.hidden = false;
+    showCleanupStep();
 }
 
 function parseCountValue(value) {
@@ -852,26 +1748,141 @@ function updateDetailsVisibility() {
     }
 }
 
+function updateBackPreview() {
+    const back = sideState.back;
+    const hasBack = Boolean(back.urls.final);
+
+    addBackButton.hidden = hasBack;
+    detailsBackPreview.hidden = !hasBack;
+    backPreviewActions.hidden = !hasBack;
+
+    if (!hasBack) {
+        return;
+    }
+
+    detailsBackImage.src = back.urls.final;
+    applySlotTransform(detailsBackSlot, back.transform);
+}
+
 function showDetailsStep() {
-    if (!imagePreviewUrls.final) {
+    persistActiveSide();
+
+    if (!sideState.front.urls.final) {
         positionStatus.textContent = "Please finish placing the image first.";
         return;
     }
 
+    rememberCommittedBack();
+    hasReachedDetails = true;
+    activateSide("front");
     isPositioning = false;
+    editorStep.hidden = true;
+    cleanupStep.hidden = true;
     positionStep.hidden = true;
+    galleryStep.hidden = true;
+    hideCaptureChrome();
     detailsStep.hidden = false;
-    detailsPreviewImage.src = imagePreviewUrls.final;
-    applyClothingTransform(detailsPreviewSlot);
+    detailsPreviewImage.src = sideState.front.urls.final;
+    applySlotTransform(detailsPreviewSlot, sideState.front.transform);
+    updateBackPreview();
+    updateGalleryPreview();
     updateDetailsVisibility();
+    updateSideUi();
 }
 
 function showPositionFromDetails() {
+    activateSide("front");
     detailsStep.hidden = true;
+    galleryStep.hidden = true;
     positionStep.hidden = false;
+    positionStatus.textContent = positionPrompt();
     positionImage.src = imagePreviewUrls.final;
     applyPositionTransform();
     syncPositionControls();
+    updateSideUi();
+}
+
+function showBackPositionFromDetails() {
+    activateSide("back");
+    if (!imagePreviewUrls.final) {
+        startBackCapture();
+        return;
+    }
+
+    detailsStep.hidden = true;
+    hideCaptureChrome();
+    showPositionStep();
+}
+
+function startBackCapture() {
+    persistActiveSide();
+    captureMode = "item";
+    rememberCommittedBack();
+    activateSide("back");
+    editorStep.hidden = true;
+    cleanupStep.hidden = true;
+    positionStep.hidden = true;
+    detailsStep.hidden = true;
+    galleryStep.hidden = true;
+
+    if (imagePreviewUrls.original) {
+        showCaptureChrome();
+        showPreview(imagePreviewUrls.original);
+    } else {
+        resetCaptureUiForNewPhoto();
+    }
+
+    updateSideUi();
+}
+
+function restoreCommittedBackIfNeeded() {
+    persistActiveSide();
+    if (!committedBack || sideState.back.urls.final) {
+        return;
+    }
+
+    sideState.back = cloneSide(committedBack);
+    captureSide = "back";
+    applyLiveFrom("back");
+}
+
+function startGalleryCapture(options = {}) {
+    const fromGrid = Boolean(options.fromGrid);
+    showDetailsError("");
+    if (galleryPhotos.length >= MAX_GALLERY_PHOTOS) {
+        const message = `You can add up to ${MAX_GALLERY_PHOTOS} extra photos.`;
+        if (fromGrid) {
+            galleryStatus.textContent = message;
+        } else {
+            showDetailsError(message);
+        }
+        return;
+    }
+
+    persistActiveSide();
+    captureMode = "gallery";
+    openGalleryGridAfterCapture = fromGrid;
+    clearGalleryDraft();
+    editorStep.hidden = true;
+    cleanupStep.hidden = true;
+    positionStep.hidden = true;
+    detailsStep.hidden = true;
+    galleryStep.hidden = true;
+    resetCaptureUiForNewPhoto();
+    updateSideUi();
+}
+
+function cancelCaptureToDetails() {
+    if (capturingGalleryPhotos()) {
+        clearGalleryDraft();
+        finishGalleryCapture();
+        return;
+    }
+
+    restoreCommittedBackIfNeeded();
+    activateSide("front");
+    hideCaptureChrome();
+    showDetailsStep();
 }
 
 positionSlot.addEventListener("pointerdown", event => {
@@ -940,13 +1951,27 @@ resetPositionButton.addEventListener("click", () => {
     resetClothingTransform();
     applyPositionTransform();
     syncPositionControls();
-    positionStatus.textContent =
-        "Line the clothing up with the mannequin. Drag to move, then adjust rotation and scale.";
+    positionStatus.textContent = positionPrompt();
 });
 
 backToCleanupButton.addEventListener("click", showCleanupFromPosition);
 continueAfterPositionButton.addEventListener("click", showDetailsStep);
 editPositionButton.addEventListener("click", showPositionFromDetails);
+flowBackButton.addEventListener("click", () => {
+    if (typeof flowBackAction === "function") {
+        flowBackAction();
+    }
+});
+addBackButton.addEventListener("click", startBackCapture);
+editBackButton.addEventListener("click", showBackPositionFromDetails);
+retakeBackButton.addEventListener("click", startBackCapture);
+addGalleryButton.addEventListener("click", () => startGalleryCapture());
+detailsGalleryPreview.addEventListener("click", showGalleryStep);
+galleryBackButton.addEventListener("click", showDetailsStep);
+galleryAddButton.addEventListener("click", () => {
+    startGalleryCapture({ fromGrid: true });
+});
+backToDetailsButton.addEventListener("click", cancelCaptureToDetails);
 publishCheckbox.addEventListener("change", updateDetailsVisibility);
 forSaleCheckbox.addEventListener("change", updateDetailsVisibility);
 priceInput.addEventListener("blur", formatPriceInput);
@@ -983,7 +2008,11 @@ async function createClothing() {
     formatPriceInput();
     addClothingTag(tagInput.value);
 
-    if (!clothingImages.original || !clothingImages.final) {
+    persistActiveSide();
+    const front = sideState.front;
+    const back = sideState.back;
+
+    if (!front.images.original || !front.images.final) {
         showDetailsError("Please finish capturing and editing the image first.");
         return;
     }
@@ -1011,21 +2040,52 @@ async function createClothing() {
     formData.append("for_sale", forSale ? "true" : "false");
     formData.append("price", forSale ? priceInput.value : "");
     formData.append("stock", forSale ? stockInput.value : "1");
-    formData.append("transform", JSON.stringify(clothingTransform));
+
+    const transformPayload = { ...front.transform };
+    if (back.images.final) {
+        transformPayload.back = { ...back.transform };
+    }
+    formData.append("transform", JSON.stringify(transformPayload));
     formData.append(
         "original_front_image",
-        blobAsFile(clothingImages.original, "original_front.png"),
+        blobAsFile(front.images.original, "original_front.png"),
     );
-    if (clothingImages.processed) {
+    if (front.images.processed) {
         formData.append(
             "processed_front_image",
-            blobAsFile(clothingImages.processed, "processed_front.png"),
+            blobAsFile(front.images.processed, "processed_front.png"),
         );
     }
     formData.append(
         "final_front_image",
-        blobAsFile(clothingImages.final, "final_front.png"),
+        blobAsFile(front.images.final, "final_front.png"),
     );
+
+    if (back.images.final) {
+        if (back.images.original) {
+            formData.append(
+                "original_back_image",
+                blobAsFile(back.images.original, "original_back.png"),
+            );
+        }
+        if (back.images.processed) {
+            formData.append(
+                "processed_back_image",
+                blobAsFile(back.images.processed, "processed_back.png"),
+            );
+        }
+        formData.append(
+            "final_back_image",
+            blobAsFile(back.images.final, "final_back.png"),
+        );
+    }
+
+    galleryPhotos.forEach((photo, index) => {
+        formData.append(
+            "gallery_images",
+            blobAsFile(photo.blob, `gallery_${index + 1}.png`),
+        );
+    });
 
     createClothingButton.disabled = true;
 
@@ -1046,6 +2106,7 @@ async function createClothing() {
             );
         }
 
+        ignoreLeaveWarning = true;
         window.location.href = data.redirect || "/wardrobe/";
     } catch (error) {
         showDetailsError(
@@ -1062,7 +2123,7 @@ clothingDetailsForm.addEventListener("submit", event => {
 });
 
 function normalizeTag(value) {
-    return value.replaceAll(",", " ").trim().replace(/\s+/g, " ");
+    return value.replaceAll(",", " ").trim().replace(/\s+/g, " ").toLowerCase();
 }
 
 function renderClothingTags() {
@@ -1099,9 +2160,7 @@ function addClothingTag(rawValue) {
         return;
     }
 
-    const alreadyAdded = clothingTags.some(
-        existing => existing.toLowerCase() === tag.toLowerCase(),
-    );
+    const alreadyAdded = clothingTags.includes(tag);
     if (alreadyAdded) {
         tagInput.value = "";
         return;
@@ -1143,3 +2202,42 @@ tagInput.addEventListener("input", () => {
 tagInput.addEventListener("blur", () => {
     addClothingTag(tagInput.value);
 });
+
+document.addEventListener("click", event => {
+    const link = event.target.closest("a[href]");
+    if (!link || event.defaultPrevented || event.button !== 0) {
+        return;
+    }
+
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+    }
+
+    if (link.target && link.target !== "_self") {
+        return;
+    }
+
+    const nextUrl = new URL(link.href, window.location.href);
+    const sameDocument =
+        nextUrl.origin === window.location.origin
+        && nextUrl.pathname === window.location.pathname
+        && nextUrl.search === window.location.search;
+
+    if ((sameDocument && nextUrl.hash) || !isPastFirstCaptureStep()) {
+        return;
+    }
+
+    event.preventDefault();
+    leaveTo(nextUrl.href);
+});
+
+window.addEventListener("beforeunload", event => {
+    if (ignoreLeaveWarning || !isPastFirstCaptureStep()) {
+        return;
+    }
+
+    event.preventDefault();
+    event.returnValue = LEAVE_WARNING;
+});
+
+updateFlowNav();
