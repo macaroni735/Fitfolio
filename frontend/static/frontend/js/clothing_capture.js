@@ -516,7 +516,7 @@ function updateFlowNav() {
 
     if (!editorStep.hidden) {
         flowBackButton.textContent = "← Photo";
-        flowBackAction = showCaptureStep;
+        flowBackAction = confirmBackFromEditor;
         return;
     }
 
@@ -1176,6 +1176,23 @@ function showEditorStep() {
     processCapturedImage();
 }
 
+function isBackgroundRemovalInProgress() {
+    return !editorStep.hidden && !processingStatus.hidden;
+}
+
+function confirmBackFromEditor() {
+    if (isBackgroundRemovalInProgress()) {
+        const confirmed = window.confirm(
+            "Are you sure you want to go back a step?\nThis will reset background removal progress.",
+        );
+        if (!confirmed) {
+            return;
+        }
+    }
+
+    showCaptureStep();
+}
+
 function showCaptureStep() {
     processingRequestId += 1;
 
@@ -1274,7 +1291,7 @@ async function processCapturedImage() {
 
 retryProcessingButton.addEventListener("click", processCapturedImage);
 
-backToCaptureButton.addEventListener("click", showCaptureStep);
+backToCaptureButton.addEventListener("click", confirmBackFromEditor);
 
 function continueFromCapture() {
     if (capturingGalleryPhotos()) {
