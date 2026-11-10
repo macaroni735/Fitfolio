@@ -86,7 +86,23 @@
                 {% endif %}
 
                 {% if item.for_sale %}
-                    <p>For sale: ${{ item.price }}</p>
+                    <div class="sale-row">
+                        <p class="sale-price">For sale: ${{ item.price }}</p>
+                        {% if item.user.email %}
+                            <span class="copy-seller-email-wrap">
+                                <button
+                                    type="button"
+                                    class="copy-seller-email"
+                                    data-email="{{ item.user.email }}"
+                                    aria-label="Contact seller"
+                                >
+                                    <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+                                    <span class="copy-seller-email-label">Contact seller</span>
+                                </button>
+                                <span class="copy-seller-email-toast" hidden role="status">Email copied</span>
+                            </span>
+                        {% endif %}
+                    </div>
                 {% endif %}
 
                 {% for tag in item.tags %}
@@ -128,5 +144,6 @@
 
     </main>
 {% include 'frontend/navbar.html' %}
+<script src="{% static 'frontend/js/community.js' %}"></script>
 </body>
 </html>

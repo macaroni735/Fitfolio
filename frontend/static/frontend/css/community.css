@@ -169,7 +169,8 @@ main {
     overflow-wrap: anywhere;
 }
 
-.clothing-grid article span {
+.clothing-grid article > span,
+.clothing-grid article .outfit-tags span {
     display: inline-block;
     margin: 8px 5px 0 0;
     padding: 6px 12px;
@@ -178,6 +179,97 @@ main {
     border-radius: 20px;
     font-size: 11px;
     font-weight: 600;
+}
+
+.sale-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 6px 0;
+}
+
+.sale-row .copy-seller-email-wrap {
+    margin-left: auto;
+}
+
+.sale-row .sale-price {
+    margin: 0;
+    line-height: 1.4;
+}
+
+.copy-seller-email-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.copy-seller-email {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 8px;
+    border: 1px solid #F1D6E4;
+    border-radius: 999px;
+    background: #FFF5FA;
+    color: #D878A8;
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    overflow: hidden;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.copy-seller-email i,
+.copy-seller-email-label {
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+.copy-seller-email i {
+    font-size: 10px;
+}
+
+.copy-seller-email:hover {
+    background: #FCECF5;
+    border-color: #D878A8;
+}
+
+.copy-seller-email-toast {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    z-index: 2;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: #4B4560;
+    color: #FFFCFA;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translateX(-50%);
+    box-shadow: 0 6px 16px rgba(75, 69, 96, 0.18);
+}
+
+.copy-seller-email-toast::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    border: 5px solid transparent;
+    border-top-color: #4B4560;
+    transform: translateX(-50%);
 }
 
 .community-outfits {
