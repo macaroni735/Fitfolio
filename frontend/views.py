@@ -71,7 +71,7 @@ def home_view(request):
 def wardrobe_view(request):
     clothing_items = Clothing.objects.filter(
         user=request.user
-    ).order_by('-created_at')
+    ).prefetch_related('gallery_images').order_by('-created_at')
 
     return render(request, 'frontend/wardrobe.html', {
         'clothing_items': clothing_items,
@@ -91,7 +91,7 @@ def create_outfit_view(request):
 
     clothing_items = Clothing.objects.filter(
         user=request.user
-    ).order_by('-created_at')
+    ).prefetch_related('gallery_images').order_by('-created_at')
 
     return render(request, 'frontend/create_outfit.html', {
         'saved_outfits': saved_outfits,

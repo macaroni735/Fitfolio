@@ -1,0 +1,93 @@
+<label for="edit-clothing-name">Clothing Name</label>
+<input type="text" id="edit-clothing-name" name="name" maxlength="100" required>
+
+<label for="edit-clothing-description">Description</label>
+<textarea id="edit-clothing-description" name="description" rows="3"></textarea>
+
+<label for="edit-clothing-category">Category</label>
+<select id="edit-clothing-category" name="category">
+    <option value="womens">Women's</option>
+    <option value="mens">Men's</option>
+    <option value="unisex">Unisex</option>
+    <option value="kids">Kids</option>
+</select>
+
+<label for="edit-clothing-article-type">Article Type</label>
+<select id="edit-clothing-article-type" name="article_type">
+    <option value="tops">Tops</option>
+    <option value="bottoms">Bottoms</option>
+    <option value="dresses">Dresses</option>
+    <option value="outerwear">Outerwear</option>
+    <option value="shoes">Shoes</option>
+    <option value="accessories">Accessories</option>
+    <option value="other">Other</option>
+</select>
+
+<label for="edit-clothing-size">Size</label>
+<input type="text" id="edit-clothing-size" name="size" maxlength="20">
+
+<div class="edit-field">
+    <label for="edit-clothing-tags">Tags</label>
+    <div class="edit-tag-input" id="edit-tag-editor">
+        <div id="edit-tag-list" class="edit-tag-list"></div>
+        <input
+            id="edit-clothing-tags"
+            type="text"
+            autocomplete="off"
+            placeholder="Type a tag, then Enter"
+        >
+    </div>
+    <input type="hidden" id="edit-clothing-tags-value" name="tags" value="[]">
+</div>
+
+<label for="edit-clothing-count">Count</label>
+<input id="edit-clothing-count" name="count" type="number" min="0" step="1" value="1">
+
+<label class="edit-check">
+    <input id="edit-clothing-publish" name="publish" type="checkbox" value="true">
+    <span>Publish</span>
+</label>
+
+<div id="edit-publish-fields" hidden>
+    <label class="edit-check">
+        <input id="edit-clothing-anonymous" name="anonymous" type="checkbox" value="true">
+        <span>Anonymous</span>
+    </label>
+
+    <label class="edit-check">
+        <input id="edit-clothing-for-sale" name="for_sale" type="checkbox" value="true">
+        <span>For Sale</span>
+    </label>
+</div>
+
+<div id="edit-sale-fields" hidden>
+    <label for="edit-clothing-price">Price</label>
+    <div class="edit-price-field">
+        <span class="edit-price-prefix" aria-hidden="true">$</span>
+        <input
+            id="edit-clothing-price"
+            name="price"
+            type="number"
+            min="0"
+            step="1"
+            value="0.00"
+        >
+    </div>
+
+    <label for="edit-clothing-stock">Stock</label>
+    <input id="edit-clothing-stock" name="stock" type="number" min="0" step="1" value="1">
+</div>
+
+<div class="edit-field edit-gallery-field">
+    <span class="edit-field-label">Gallery</span>
+    <div id="edit-gallery-grid" class="edit-gallery-grid"></div>
+    <input
+        id="edit-clothing-gallery"
+        name="gallery_images"
+        type="file"
+        accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+        multiple
+        hidden
+    >
+    <p class="edit-gallery-hint">Up to 12 photos. New picks show here right away; remove any before saving.</p>
+</div>

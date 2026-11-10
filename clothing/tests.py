@@ -1,4 +1,6 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
 from django.test import TestCase
 
 from clothing.models import Clothing
@@ -42,3 +44,28 @@ class TagNormalizationTests(TestCase):
         outfit.refresh_from_db()
         self.assertEqual(clothing.tags, ["vintage", "casual"])
         self.assertEqual(outfit.tags, ["summer", "street wear"])
+
+
+class AnonymousForSaleConstraintTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("saleuser", password="pass12345")
+
+    def test_clean_rejects_anonymous_and_for_sale(self):
+        clothing = Clothing(
+            user=self.user,
+            display_name="Listed Anon Jacket",
+            anonymous=True,
+            for_sale=True,
+        )
+        with self.assertRaises(ValidationError):
+            clothing.full_clean()
+
+    def test_database_rejects_anonymous_and_for_sale(self):
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Clothing.objects.create(
+                    user=self.user,
+                    display_name="Listed Anon Jacket",
+                    anonymous=True,
+                    for_sale=True,
+                )

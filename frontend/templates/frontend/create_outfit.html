@@ -64,15 +64,7 @@
             <button
                 type="button"
                 class="edit-clothing-btn"
-                data-item-id="{{ item.id }}"
-                data-name="{{ item.display_name }}"
-                data-description="{{ item.description }}"
-                data-category="{{ item.category }}"
-                data-article-type="{{ item.article_type }}"
-                data-size="{{ item.size }}"
-                data-update-url="{% url 'update_clothing' item.id %}"
-                data-delete-url="{% url 'delete_clothing' item.id %}"
-                aria-label="Edit {{ item.display_name }}"
+                {% include 'frontend/partials/edit_clothing_button_attrs.html' %}
             >
                 <i class="fa-solid fa-pen"></i>
             </button>
@@ -234,34 +226,7 @@
 
         <form id="edit-clothing-form">
             {% csrf_token %}
-
-            <label for="edit-clothing-name">Clothing Name</label>
-            <input type="text" id="edit-clothing-name" name="name" maxlength="100" required>
-
-            <label for="edit-clothing-description">Description</label>
-            <textarea id="edit-clothing-description" name="description" rows="3"></textarea>
-
-            <label for="edit-clothing-category">Category</label>
-            <select id="edit-clothing-category" name="category">
-                <option value="womens">Women's</option>
-                <option value="mens">Men's</option>
-                <option value="unisex">Unisex</option>
-                <option value="kids">Kids</option>
-            </select>
-
-            <label for="edit-clothing-article-type">Article Type</label>
-            <select id="edit-clothing-article-type" name="article_type">
-                <option value="tops">Tops</option>
-                <option value="bottoms">Bottoms</option>
-                <option value="dresses">Dresses</option>
-                <option value="outerwear">Outerwear</option>
-                <option value="shoes">Shoes</option>
-                <option value="accessories">Accessories</option>
-                <option value="other">Other</option>
-            </select>
-
-            <label for="edit-clothing-size">Size</label>
-            <input type="text" id="edit-clothing-size" name="size" maxlength="20">
+            {% include 'frontend/partials/edit_clothing_form_fields.html' %}
 
             <p id="edit-clothing-status" role="status"></p>
 
@@ -276,6 +241,7 @@
         </form>
     </div>
 </div>
+<script src="{% static 'frontend/js/edit_clothing.js' %}" defer></script>
 <script src="{% static 'frontend/js/create_outfit.js' %}" defer></script>
 </body>
 </html>
