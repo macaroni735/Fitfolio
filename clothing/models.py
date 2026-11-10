@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 import uuid
@@ -65,6 +66,21 @@ class Clothing(models.Model):
     stock = models.PositiveIntegerField(default=1)
     transform = models.JSONField(default=default_clothing_transform, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=~(models.Q(anonymous=True) & models.Q(for_sale=True)),
+                name="clothing_not_anonymous_and_for_sale",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.anonymous and self.for_sale:
+            raise ValidationError(
+                "Anonymous and For Sale can't both be enabled.",
+            )
 
 
 class ClothingGalleryImage(models.Model):

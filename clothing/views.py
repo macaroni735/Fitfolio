@@ -103,6 +103,11 @@ def create_clothing(request):
     published = _is_checked(request.POST.get("publish"))
     anonymous = published and _is_checked(request.POST.get("anonymous"))
     for_sale = published and _is_checked(request.POST.get("for_sale"))
+    if anonymous and for_sale:
+        return JsonResponse(
+            {"error": "Anonymous and For Sale can't both be selected."},
+            status=400,
+        )
     count = _parse_int(request.POST.get("count"), default=1)
     stock = _parse_int(request.POST.get("stock"), default=1, maximum=count)
 

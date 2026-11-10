@@ -1765,6 +1765,18 @@ function updateDetailsVisibility() {
     }
 }
 
+function syncAnonymousAndForSale(changed) {
+    if (changed === "anonymous" && anonymousCheckbox.checked) {
+        forSaleCheckbox.checked = false;
+    }
+
+    if (changed === "for_sale" && forSaleCheckbox.checked) {
+        anonymousCheckbox.checked = false;
+    }
+
+    updateDetailsVisibility();
+}
+
 function updateBackPreview() {
     const back = sideState.back;
     const hasBack = Boolean(back.urls.final);
@@ -1990,7 +2002,12 @@ galleryAddButton.addEventListener("click", () => {
 });
 backToDetailsButton.addEventListener("click", cancelCaptureToDetails);
 publishCheckbox.addEventListener("change", updateDetailsVisibility);
-forSaleCheckbox.addEventListener("change", updateDetailsVisibility);
+anonymousCheckbox.addEventListener("change", () => {
+    syncAnonymousAndForSale("anonymous");
+});
+forSaleCheckbox.addEventListener("change", () => {
+    syncAnonymousAndForSale("for_sale");
+});
 priceInput.addEventListener("blur", formatPriceInput);
 priceInput.addEventListener("change", formatPriceInput);
 countInput.addEventListener("input", syncStockLimit);
