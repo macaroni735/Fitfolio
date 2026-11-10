@@ -44,4 +44,5 @@ urlpatterns = [
         template_name='frontend/password_reset_success.html'
     ),
     name='password_reset_complete'),
+    path('profile/', views.profile_view, name='profile'),
 ]

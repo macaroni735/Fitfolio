@@ -1,5 +1,4 @@
 
-
 <nav class="bottom-nav" aria-label="Main navigation">
     <a href="{% url 'home' %}" class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
         <i class="fa-solid fa-house nav-icon"></i>
@@ -23,5 +22,10 @@
     <a href="{% url 'community' %}" class="nav-item {% if request.resolver_match.url_name == 'community' %}active{% endif %}">
         <i class="fa-solid fa-user-group nav-icon"></i>
         <span class="nav-label">Community</span>
+    </a>
+
+    <a href="{% url 'profile' %}" class="nav-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+        <i class="fa-regular fa-user nav-icon"></i>
+        <span class="nav-label">Profile</span>
     </a>
 </nav>

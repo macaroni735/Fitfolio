@@ -1,0 +1,77 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitfolio | My Profile</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'frontend/css/profile.css' %}">
+    <link rel="stylesheet" href="{% static 'frontend/css/navbar.css' %}">
+</head>
+<body>
+
+    <main class="profile-page">
+        <div class="profile-container">
+
+            <div class="profile-heading">
+                <span class="profile-eyebrow">YOUR FITFOLIO ACCOUNT</span>
+                <h1>My Profile</h1>
+                <p>A little space that's all about you. ♡</p>
+            </div>
+
+            <div class="profile-card">
+                <div class="profile-avatar">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+
+                <h2>{{ request.user.username }}</h2>
+                <p class="profile-member">Fitfolio Member</p>
+
+                {% if success %}
+                    <p class="profile-success">{{ success }}</p>
+                {% endif %}
+
+                {% if error %}
+                    <p class="profile-error">{{ error }}</p>
+                {% endif %}
+
+                <form method="POST" class="profile-form">
+                    {% csrf_token %}
+
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        value="{{ request.user.username }}"
+                        maxlength="150"
+                        required
+                    >
+
+                    <label for="email">Email Address</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value="{{ request.user.email }}"
+                    >
+
+                    <button type="submit" class="profile-save-btn">
+                        <i class="fa-solid fa-heart"></i>
+                        Save Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    {% include 'frontend/navbar.html' %}
+
+</body>
+</html>

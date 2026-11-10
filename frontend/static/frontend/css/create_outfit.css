@@ -769,6 +769,11 @@ body {
     white-space: nowrap;
 }
 
+.decoration-icon {
+    font-size: 58px;
+    color: #D878A8;
+}
+
 @media (max-width: 700px) {
     .outfit-header {
         padding-top: 65px;
@@ -1314,6 +1319,56 @@ body {
 .mannequin-clothing {
     position: absolute;
     transform: translateX(-50%);
+    object-fit: contain;
+    pointer-events: auto;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.mannequin-clothing:active {
+    cursor: grabbing;
+}
+.mannequin-stage {
+    position: relative;
+    width: 260px;
+    height: 440px;
+    max-width: 100%;
+    overflow: hidden;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #FFFCFA 0%, #FCECF5 100%);
+}
+
+.mannequin-body {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.mannequin-guide {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    user-select: none;
+    pointer-events: none;
+}
+
+.mannequin-clothing-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.mannequin-clothing {
+    position: absolute;
     object-fit: contain;
     pointer-events: auto;
     cursor: grab;
