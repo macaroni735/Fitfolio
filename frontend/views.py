@@ -84,8 +84,10 @@ def clothing_capture_view(request):
 @login_required(login_url='login')
 def create_outfit_view(request):
     saved_outfits = Outfit.objects.filter(
-        user=request.user
-    ).order_by('-created_at')
+    user=request.user
+).prefetch_related(
+    'clothing_placements__clothing'
+).order_by('-created_at')
 
     clothing_items = Clothing.objects.filter(
         user=request.user
@@ -160,3 +162,29 @@ def community_view(request):
         'selected_tag': tag,
         'selected_for_sale': for_sale,
     })
+
+@login_required(login_url='login')
+def profile_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+
+        if not username:
+            return render(request, 'frontend/profile.html', {
+                'error': 'Username cannot be empty.'
+            })
+
+        if User.objects.exclude(pk=request.user.pk).filter(username=username).exists():
+            return render(request, 'frontend/profile.html', {
+                'error': 'That username is already taken.'
+            })
+
+        request.user.username = username
+        request.user.email = email
+        request.user.save()
+
+        return render(request, 'frontend/profile.html', {
+            'success': 'Profile updated successfully!'
+        })
+
+    return render(request, 'frontend/profile.html')

@@ -422,6 +422,70 @@ clothingTransforms[clothingImage.dataset.itemId] = {
         });
     });
 
+const savedOutfitCards = document.querySelectorAll('.saved-outfit-card');
+
+savedOutfitCards.forEach(card => {
+    card.addEventListener('click', event => {
+        if (event.target.closest('.delete-outfit-btn')) return;
+
+        const placements = card.querySelectorAll(
+            '.saved-outfit-placements [data-clothing-id]'
+        );
+
+        if (!placements.length) {
+            alert('This outfit has no clothing to display.');
+            return;
+        }
+
+        clothingItems.forEach(item => {
+            item.classList.remove('selected');
+            item.setAttribute('aria-pressed', 'false');
+        });
+
+        Object.keys(clothingPositions).forEach(id => {
+            delete clothingPositions[id];
+        });
+
+        Object.keys(clothingTransforms).forEach(id => {
+            delete clothingTransforms[id];
+        });
+
+        placements.forEach(placement => {
+            const id = placement.dataset.clothingId;
+
+            const item = Array.from(clothingItems).find(
+                clothing => clothing.dataset.itemId === id
+            );
+
+            if (!item) return;
+
+            item.classList.add('selected');
+            item.setAttribute('aria-pressed', 'true');
+
+            const transform = {
+                x: Number(placement.dataset.x),
+                y: Number(placement.dataset.y),
+                rotation: Number(placement.dataset.rotation),
+                scale: Number(placement.dataset.scale)
+            };
+
+            clothingTransforms[id] = transform;
+
+            clothingPositions[id] = {
+                left: `${transform.x * 100}%`,
+                top: `${transform.y * 100}%`
+            };
+        });
+
+        updatePreview();
+
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        document.getElementById('outfit-name').value =
+            card.querySelector('.saved-outfit-info h4')?.textContent.trim() || '';
+    });
+});
+
 });
 
 

@@ -1,0 +1,161 @@
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #FCECF5;
+    color: #4B4560;
+    font-family: 'Poppins', sans-serif;
+}
+
+.profile-page {
+    min-height: 100vh;
+    padding: 80px 24px 120px;
+}
+
+.profile-container {
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+.profile-heading {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.profile-eyebrow {
+    color: #D878A8;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+}
+
+.profile-heading h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 5vw, 48px);
+    margin: 12px 0;
+}
+
+.profile-heading p {
+    color: #82788D;
+    font-size: 14px;
+}
+
+.profile-card {
+    background: #fff;
+    border: 1px solid #F3DCE8;
+    border-radius: 24px;
+    padding: 42px;
+    box-shadow: 0 12px 40px rgba(120, 76, 110, 0.08);
+    text-align: center;
+}
+
+.profile-avatar {
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: #F9E1EE;
+    color: #D878A8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+}
+
+.profile-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    margin: 0 0 6px;
+}
+
+.profile-member {
+    color: #9B8B9A;
+    font-size: 13px;
+    margin-bottom: 32px;
+}
+
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    gap: 10px;
+}
+
+.profile-form label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 12px;
+}
+
+.profile-form input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #E9D9E3;
+    border-radius: 12px;
+    background: #FFFAFD;
+    color: #4B4560;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.profile-form input:focus {
+    border-color: #D878A8;
+    box-shadow: 0 0 0 3px rgba(216, 120, 168, 0.12);
+}
+
+.profile-save-btn {
+    width: 100%;
+    margin-top: 24px;
+    padding: 15px;
+    background: #D878A8;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.profile-save-btn:hover {
+    background: #C56596;
+    transform: translateY(-2px);
+}
+
+.profile-save-btn i {
+    margin-right: 8px;
+}
+
+.profile-success,
+.profile-error {
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.profile-success {
+    background: #EDF7ED;
+    color: #39734A;
+}
+
+.profile-error {
+    background: #FDE9ED;
+    color: #A13F58;
+}
+
+@media (max-width: 600px) {
+    .profile-page {
+        padding: 48px 16px 110px;
+    }
+
+    .profile-card {
+        padding: 28px 22px;
+    }
+}
