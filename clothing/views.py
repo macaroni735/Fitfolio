@@ -246,10 +246,14 @@ def _parse_transform(raw):
     return transform
 
 
-def _save_gallery_images(clothing, uploaded_files):
+def _save_gallery_images(clothing, uploaded_files, start_order=None):
+    if start_order is None:
+        start_order = clothing.gallery_images.count()
+
+    remaining = max(0, MAX_GALLERY_IMAGES - start_order)
     saved = 0
     for uploaded in uploaded_files:
-        if saved >= MAX_GALLERY_IMAGES:
+        if saved >= remaining:
             break
         if uploaded is None:
             continue
@@ -259,7 +263,7 @@ def _save_gallery_images(clothing, uploaded_files):
 
         gallery_image = ClothingGalleryImage(
             clothing=clothing,
-            sort_order=saved,
+            sort_order=start_order + saved,
         )
         gallery_image.save()
         _assign_image(gallery_image, "image", uploaded, "gallery")
@@ -294,6 +298,40 @@ def update_clothing(request, clothing_id):
             status=400
         )
 
+    published = _is_checked(request.POST.get("publish"))
+    anonymous = published and _is_checked(request.POST.get("anonymous"))
+    for_sale = published and _is_checked(request.POST.get("for_sale"))
+    if anonymous and for_sale:
+        return JsonResponse(
+            {"error": "Anonymous and For Sale can't both be selected."},
+            status=400,
+        )
+
+    count = _parse_int(request.POST.get("count"), default=1)
+    stock = _parse_int(request.POST.get("stock"), default=1, maximum=count)
+
+    remove_ids = []
+    for raw_id in request.POST.getlist("remove_gallery_ids"):
+        try:
+            remove_ids.append(int(raw_id))
+        except (TypeError, ValueError):
+            continue
+
+    try:
+        gallery_files = [
+            prepare_uploaded_image(uploaded)
+            for uploaded in request.FILES.getlist("gallery_images")
+        ]
+    except InvalidClothingImage as error:
+        return JsonResponse({"error": str(error)}, status=400)
+
+    remaining_gallery = clothing.gallery_images.exclude(id__in=remove_ids).count()
+    if remaining_gallery + len(gallery_files) > MAX_GALLERY_IMAGES:
+        return JsonResponse(
+            {"error": f"You can keep up to {MAX_GALLERY_IMAGES} gallery photos."},
+            status=400,
+        )
+
     clothing.display_name = display_name[:100]
     clothing.description = request.POST.get("description", "").strip()
     clothing.category = _choice(
@@ -307,8 +345,28 @@ def update_clothing(request, clothing_id):
         clothing.article_type
     )
     clothing.size = request.POST.get("size", "").strip()[:20]
+    clothing.tags = _parse_tags(request.POST.get("tags"))
+    clothing.count = count
+    clothing.publish = published
+    clothing.anonymous = anonymous
+    clothing.for_sale = for_sale
+    clothing.price = _parse_price(request.POST.get("price"), for_sale)
+    clothing.stock = stock if for_sale else 1
 
     clothing.save()
+
+    if remove_ids:
+        ClothingGalleryImage.objects.filter(
+            clothing=clothing,
+            id__in=remove_ids,
+        ).delete()
+
+    if gallery_files:
+        _save_gallery_images(
+            clothing,
+            gallery_files,
+            start_order=clothing.gallery_images.count(),
+        )
 
     return JsonResponse({
         "success": True,
