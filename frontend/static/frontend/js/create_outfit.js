@@ -2,6 +2,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const clothingItems = document.querySelectorAll('.clothing-item');
     const clothingPositions = {};
+    const clothingTransforms = {};
     const previewArea = document.getElementById('outfit-preview');
     const placeholder = document.getElementById('preview-placeholder');
     const categoryButtons = document.querySelectorAll('.category');
@@ -161,14 +162,49 @@ function updatePreview() {
 
     
     const categoryPositions = {
-        tops: { top: '22%', left: '50%', width: '42%', height: '30%' },
-        bottoms: { top: '46%', left: '50%', width: '42%', height: '39%' },
-        dresses: { top: '22%', left: '50%', width: '58%', height: '60%' },
-        outerwear: { top: '21%', left: '50%', width: '55%', height: '36%' },
-        shoes: { top: '84%', left: '50%', width: '52%', height: '12%' },
-        accessories: { top: '10%', left: '50%', width: '35%', height: '18%' },
-        other: { top: '32%', left: '50%', width: '40%', height: '30%' }
-    };
+    tops: {
+        top: '19%',
+        left: '50%',
+        width: '57%',
+        height: '27%'
+    },
+    bottoms: {
+        top: '43%',
+        left: '50%',
+        width: '49%',
+        height: '46%'
+    },
+    dresses: {
+        top: '19%',
+        left: '50%',
+        width: '65%',
+        height: '66%'
+    },
+    outerwear: {
+        top: '18%',
+        left: '50%',
+        width: '68%',
+        height: '35%'
+    },
+    shoes: {
+        top: '87%',
+        left: '50%',
+        width: '47%',
+        height: '12%'
+    },
+    accessories: {
+        top: '8%',
+        left: '50%',
+        width: '34%',
+        height: '17%'
+    },
+    other: {
+        top: '28%',
+        left: '50%',
+        width: '45%',
+        height: '30%'
+    }
+};
 
 
     const categoryOrder = {
@@ -204,6 +240,14 @@ clothingImage.style.left = savedPosition ? savedPosition.left : position.left;
         clothingImage.style.zIndex = categoryOrder[category] || 7;
 
         clothingLayer.appendChild(clothingImage);
+        if (!clothingTransforms[item.dataset.itemId]) {
+    clothingTransforms[item.dataset.itemId] = {
+        x: parseFloat(position.left) / 100,
+        y: parseFloat(position.top) / 100,
+        rotation: 0,
+        scale: 1
+    };
+}
 
 
 clothingImage.draggable = false;
@@ -242,6 +286,12 @@ clothingImage.addEventListener('pointerdown', event => {
         clothingPositions[clothingImage.dataset.itemId] = {
     left: `${newLeft}px`,
     top: `${newTop}px`
+};
+clothingTransforms[clothingImage.dataset.itemId] = {
+    x: newLeft / stageRect.width,
+    y: newTop / stageRect.height,
+    rotation: 0,
+    scale: 1
 };
     };
 
@@ -301,11 +351,17 @@ clothingImage.addEventListener('pointerdown', event => {
                         ?.split('=')[1] || ''
                 },
                 body: JSON.stringify({
-                    name: name,
-                    description: description,
-                    clothing_ids: clothingIds,
-                    publish: publish
-                })
+    name: name,
+    description: description,
+    clothing_ids: clothingIds,
+    clothing_transforms: Object.fromEntries(
+        clothingIds.map(id => [
+            id,
+            clothingTransforms[id]
+        ]).filter(([, transform]) => transform !== undefined)
+    ),
+    publish: publish
+})
             });
 
             const data = await response.json();

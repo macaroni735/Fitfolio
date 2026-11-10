@@ -112,14 +112,14 @@
     <div class="mannequin-studio" id="mannequin-studio">
         <div class="mannequin-stage" id="mannequin-stage">
             <div class="mannequin-body" id="mannequin-body">
-                <div class="mannequin-head"></div>
-                <div class="mannequin-neck"></div>
-                <div class="mannequin-torso"></div>
-                <div class="mannequin-arm mannequin-arm-left"></div>
-                <div class="mannequin-arm mannequin-arm-right"></div>
-                <div class="mannequin-leg mannequin-leg-left"></div>
-                <div class="mannequin-leg mannequin-leg-right"></div>
-            </div>
+            <div class="mannequin-body" id="mannequin-body">
+    <img
+        src="{% static 'frontend/images/Default Guide.png' %}"
+        alt="Outfit styling mannequin"
+        class="mannequin-guide"
+        draggable="false"
+    >
+</div>
             <div class="mannequin-clothing-layer" id="mannequin-clothing-layer"></div>
         </div>
         <p class="mannequin-hint">Choose clothing from your wardrobe to style your mannequin ♡</p>
@@ -174,7 +174,7 @@
     </div>
 
     
-<div class="saved-outfits-list">
+<div class="saved-outfit-card" data-outfit-id="{{ outfit.id }}">
     {% for outfit in saved_outfits %}
         <div class="saved-outfit-card">
             <div class="saved-outfit-icon">
