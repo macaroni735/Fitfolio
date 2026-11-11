@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 from clothing.models import Clothing, default_clothing_transform
@@ -15,7 +16,15 @@ class Outfit(models.Model):
     display_name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     tags = TagsField()
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
     publish = models.BooleanField(default=False)
+    anonymous = models.BooleanField(default=False)
+    for_sale = models.BooleanField(default=False)
     clothing = models.ManyToManyField(
         Clothing,
         through="OutfitClothing",
@@ -23,6 +32,21 @@ class Outfit(models.Model):
         blank=True,
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=~(models.Q(anonymous=True) & models.Q(for_sale=True)),
+                name="outfit_not_anonymous_and_for_sale",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.anonymous and self.for_sale:
+            raise ValidationError(
+                "Anonymous and For Sale can't both be enabled.",
+            )
 
 
 class OutfitClothing(models.Model):

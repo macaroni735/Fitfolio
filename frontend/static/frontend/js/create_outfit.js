@@ -212,11 +212,156 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const saveButton = document.getElementById('save-outfit');
     const saveStatus = document.getElementById('save-outfit-status');
+    const publishCheckbox = document.getElementById('outfit-publish');
+    const anonymousCheckbox = document.getElementById('outfit-anonymous');
+    const forSaleCheckbox = document.getElementById('outfit-for-sale');
+    const publishFields = document.getElementById('outfit-publish-fields');
+    const saleFields = document.getElementById('outfit-sale-fields');
+    const priceInput = document.getElementById('outfit-price');
+    const tagList = document.getElementById('outfit-tag-list');
+    const tagInput = document.getElementById('outfit-tags');
+    let outfitTags = [];
+
+    function normalizeTag(value) {
+        return String(value || '')
+            .replaceAll(',', ' ')
+            .trim()
+            .replace(/\s+/g, ' ')
+            .toLowerCase();
+    }
+
+    function parseTags(raw) {
+        if (!raw) {
+            return [];
+        }
+
+        try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+                return parsed
+                    .filter(tag => typeof tag === 'string')
+                    .map(normalizeTag)
+                    .filter(Boolean)
+                    .filter((tag, index, list) => list.indexOf(tag) === index);
+            }
+        } catch {
+            // Fall through to comma-separated parsing.
+        }
+
+        return String(raw)
+            .split(',')
+            .map(normalizeTag)
+            .filter(Boolean)
+            .filter((tag, index, list) => list.indexOf(tag) === index);
+    }
+
+    function renderTags() {
+        tagList.replaceChildren(...outfitTags.map((tag, index) => {
+            const chip = document.createElement('span');
+            chip.className = 'outfit-tag-chip';
+
+            const label = document.createElement('span');
+            label.textContent = tag;
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'outfit-tag-remove';
+            removeButton.setAttribute('aria-label', `Remove ${tag}`);
+            removeButton.textContent = '×';
+            removeButton.addEventListener('click', () => {
+                outfitTags.splice(index, 1);
+                renderTags();
+                tagInput.focus();
+            });
+
+            chip.append(label, removeButton);
+            return chip;
+        }));
+
+        tagInput.placeholder = outfitTags.length
+            ? ''
+            : 'Type a tag, then Enter';
+    }
+
+    function addTag(rawValue) {
+        const tag = normalizeTag(rawValue);
+        if (!tag || outfitTags.includes(tag)) {
+            tagInput.value = '';
+            return;
+        }
+
+        outfitTags.push(tag);
+        tagInput.value = '';
+        renderTags();
+    }
+
+    function formatPriceInput() {
+        const parsed = Number.parseFloat(priceInput.value);
+        const amount = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+        priceInput.value = amount.toFixed(2);
+    }
+
+    function updateDetailsVisibility() {
+        const published = publishCheckbox.checked;
+        const forSale = published && forSaleCheckbox.checked;
+
+        publishFields.hidden = !published;
+        saleFields.hidden = !forSale;
+
+        if (forSale) {
+            formatPriceInput();
+        }
+    }
+
+    function syncAnonymousAndForSale(changed) {
+        if (changed === 'anonymous' && anonymousCheckbox.checked) {
+            forSaleCheckbox.checked = false;
+        }
+
+        if (changed === 'for_sale' && forSaleCheckbox.checked) {
+            anonymousCheckbox.checked = false;
+        }
+
+        updateDetailsVisibility();
+    }
+
+    tagInput.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ',') {
+            event.preventDefault();
+            addTag(tagInput.value);
+            return;
+        }
+
+        if (event.key === 'Backspace' && tagInput.value === '' && outfitTags.length) {
+            outfitTags.pop();
+            renderTags();
+        }
+    });
+
+    tagInput.addEventListener('blur', () => {
+        if (tagInput.value.trim()) {
+            addTag(tagInput.value);
+        }
+    });
+
+    publishCheckbox.addEventListener('change', updateDetailsVisibility);
+    anonymousCheckbox.addEventListener('change', () => {
+        syncAnonymousAndForSale('anonymous');
+    });
+    forSaleCheckbox.addEventListener('change', () => {
+        syncAnonymousAndForSale('for_sale');
+    });
+    priceInput.addEventListener('blur', formatPriceInput);
+    priceInput.addEventListener('change', formatPriceInput);
+    renderTags();
+    updateDetailsVisibility();
 
     saveButton.addEventListener('click', async () => {
         const name = document.getElementById('outfit-name').value.trim();
         const description = document.getElementById('outfit-description').value.trim();
-        const publish = document.getElementById('outfit-publish').checked;
+        const publish = publishCheckbox.checked;
+        const anonymous = publish && anonymousCheckbox.checked;
+        const forSale = publish && forSaleCheckbox.checked;
 
         const selectedItems = Array.from(
             document.querySelectorAll('.clothing-item.selected')
@@ -231,6 +376,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (clothingIds.length === 0) {
             saveStatus.textContent = 'Select at least one clothing item!';
             return;
+        }
+
+        if (anonymous && forSale) {
+            saveStatus.textContent = "Anonymous and For Sale can't both be selected.";
+            return;
+        }
+
+        if (tagInput.value.trim()) {
+            addTag(tagInput.value);
         }
 
         const transformsPayload = {};
@@ -251,7 +405,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 description,
                 clothing_ids: clothingIds,
                 clothing_transforms: transformsPayload,
+                tags: outfitTags,
                 publish,
+                anonymous,
+                for_sale: forSale,
+                price: forSale ? priceInput.value : '',
             };
             if (editingOutfitId) {
                 payload.outfit_id = editingOutfitId;
@@ -381,8 +539,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.querySelector('.saved-outfit-info h4')?.textContent.trim() || '';
             document.getElementById('outfit-description').value =
                 card.dataset.description || '';
-            document.getElementById('outfit-publish').checked =
+            outfitTags = parseTags(card.dataset.tags || '');
+            renderTags();
+            publishCheckbox.checked =
                 String(card.dataset.publish || '').toLowerCase() === 'true';
+            anonymousCheckbox.checked =
+                String(card.dataset.anonymous || '').toLowerCase() === 'true';
+            forSaleCheckbox.checked =
+                String(card.dataset.forSale || '').toLowerCase() === 'true';
+            if (anonymousCheckbox.checked && forSaleCheckbox.checked) {
+                forSaleCheckbox.checked = false;
+            }
+            priceInput.value = card.dataset.price || '0.00';
+            updateDetailsVisibility();
             saveStatus.textContent = 'Editing saved outfit. Save will replace this look. ♡';
         });
     });

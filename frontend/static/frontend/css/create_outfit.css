@@ -617,15 +617,23 @@ body {
     border-radius: 20px;
 }
 
-.outfit-save-section > label:not(.outfit-publish-option) {
+.outfit-save-section > label:not(.outfit-publish-option),
+.outfit-field > label {
     font-size: 14px;
     font-weight: 600;
     color: #45415C;
     text-align: left;
 }
 
+.outfit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 #outfit-name,
-#outfit-description {
+#outfit-description,
+#outfit-price {
     width: 100%;
     padding: 13px 15px;
     border: 1px solid #E8D8E5;
@@ -643,9 +651,64 @@ body {
 }
 
 #outfit-name:focus,
-#outfit-description:focus {
+#outfit-description:focus,
+#outfit-price:focus {
     border-color: #D987B7;
     box-shadow: 0 0 0 3px rgba(241, 184, 217, 0.25);
+}
+
+.outfit-tag-input {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 8px 10px;
+    border: 1px solid #E8D8E5;
+    border-radius: 12px;
+    background: #FFFFFF;
+}
+
+.outfit-tag-input input {
+    flex: 1 1 120px;
+    min-width: 120px;
+    margin: 0;
+    padding: 4px 0;
+    border: none;
+    background: transparent;
+    color: #303047;
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.outfit-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.outfit-tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #FCECF5;
+    color: #D878A8;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.outfit-tag-remove {
+    width: auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
 }
 
 .outfit-publish-option {
@@ -661,11 +724,35 @@ body {
     text-align: left;
 }
 
-#outfit-publish {
+#outfit-publish-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#outfit-publish-fields[hidden],
+#outfit-sale-fields[hidden] {
+    display: none !important;
+}
+
+#outfit-publish,
+#outfit-anonymous,
+#outfit-for-sale {
     width: 18px;
     height: 18px;
     flex-shrink: 0;
     accent-color: #D987B7;
+}
+
+.outfit-price-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.outfit-price-prefix {
+    color: #8A8298;
+    font-weight: 600;
 }
 
 .outfit-save-section .save-outfit {

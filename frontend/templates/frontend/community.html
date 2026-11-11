@@ -124,8 +124,30 @@
 
                 <p>{{ outfit.description }}</p>
 
-                {% if outfit.user %}
+                {% if outfit.anonymous %}
+                    <p>Shared anonymously</p>
+                {% else %}
                     <p>Created by {{ outfit.user.username }}</p>
+                {% endif %}
+
+                {% if outfit.for_sale %}
+                    <div class="sale-row">
+                        <p class="sale-price">For sale: ${{ outfit.price }}</p>
+                        {% if outfit.user.email %}
+                            <span class="copy-seller-email-wrap">
+                                <button
+                                    type="button"
+                                    class="copy-seller-email"
+                                    data-email="{{ outfit.user.email }}"
+                                    aria-label="Contact seller"
+                                >
+                                    <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+                                    <span class="copy-seller-email-label">Contact seller</span>
+                                </button>
+                                <span class="copy-seller-email-toast" hidden role="status">Email copied</span>
+                            </span>
+                        {% endif %}
+                    </div>
                 {% endif %}
 
                 <div class="outfit-tags">

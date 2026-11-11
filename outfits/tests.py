@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
 
@@ -31,3 +32,27 @@ class OutfitClothingPlacementTests(TestCase):
         OutfitClothing.objects.create(outfit=self.outfit, clothing=self.shirt)
         with self.assertRaises(IntegrityError):
             OutfitClothing.objects.create(outfit=self.outfit, clothing=self.shirt)
+
+
+class OutfitSaleConstraintTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("saleuser", password="pass12345")
+
+    def test_clean_rejects_anonymous_and_for_sale(self):
+        outfit = Outfit(
+            user=self.user,
+            display_name="Street Look",
+            anonymous=True,
+            for_sale=True,
+        )
+        with self.assertRaises(ValidationError):
+            outfit.full_clean()
+
+    def test_database_rejects_anonymous_and_for_sale(self):
+        with self.assertRaises(IntegrityError):
+            Outfit.objects.create(
+                user=self.user,
+                display_name="Street Look",
+                anonymous=True,
+                for_sale=True,
+            )

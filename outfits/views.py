@@ -1,6 +1,7 @@
 
 import json
 import math
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -8,6 +9,7 @@ from django.views.decorators.http import require_POST
 from django.db import transaction
 
 from clothing.models import Clothing
+from clothing.tags import normalize_tags
 from .models import Outfit, OutfitClothing
 
 
@@ -28,6 +30,7 @@ def save_outfit(request):
     clothing_transforms = data.get("clothing_transforms", {})
     publish = data.get("publish", False)
     outfit_id = data.get("outfit_id")
+    tags = normalize_tags(data.get("tags", []))
 
     if not name or len(name) > 100:
         return JsonResponse({"error": "Enter a valid outfit name."}, status=400)
@@ -37,6 +40,16 @@ def save_outfit(request):
 
     if not isinstance(publish, bool):
         return JsonResponse({"error": "Invalid sharing option."}, status=400)
+
+    anonymous = publish and bool(data.get("anonymous", False))
+    for_sale = publish and bool(data.get("for_sale", False))
+    if anonymous and for_sale:
+        return JsonResponse(
+            {"error": "Anonymous and For Sale can't both be selected."},
+            status=400,
+        )
+
+    price = _parse_price(data.get("price"), for_sale)
 
     if len(clothing_ids) != len(set(map(str, clothing_ids))):
         return JsonResponse({"error": "Duplicate clothing items."}, status=400)
@@ -107,15 +120,31 @@ def save_outfit(request):
             outfit = existing_outfit
             outfit.display_name = name
             outfit.description = description
+            outfit.tags = tags
+            outfit.price = price
             outfit.publish = publish
-            outfit.save(update_fields=["display_name", "description", "publish"])
+            outfit.anonymous = anonymous
+            outfit.for_sale = for_sale
+            outfit.save(update_fields=[
+                "display_name",
+                "description",
+                "tags",
+                "price",
+                "publish",
+                "anonymous",
+                "for_sale",
+            ])
             created = False
         else:
             outfit = Outfit.objects.create(
                 user=request.user,
                 display_name=name,
                 description=description,
+                tags=tags,
+                price=price,
                 publish=publish,
+                anonymous=anonymous,
+                for_sale=for_sale,
             )
             created = True
 
@@ -139,6 +168,21 @@ def save_outfit(request):
             else "Outfit saved successfully!"
         ),
     }, status=200 if not created else 201)
+
+
+def _parse_price(value, for_sale):
+    if not for_sale:
+        return None
+
+    try:
+        amount = Decimal(str(value if value not in (None, "") else "0"))
+    except InvalidOperation:
+        amount = Decimal("0")
+
+    if amount < 0:
+        amount = Decimal("0")
+
+    return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
 @login_required

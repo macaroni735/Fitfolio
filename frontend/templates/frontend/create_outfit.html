@@ -143,10 +143,49 @@
         rows="3"
     ></textarea>
 
+    <div class="outfit-field">
+        <label for="outfit-tags">Tags</label>
+        <div class="outfit-tag-input" id="outfit-tag-editor">
+            <div id="outfit-tag-list" class="outfit-tag-list"></div>
+            <input
+                id="outfit-tags"
+                type="text"
+                autocomplete="off"
+                placeholder="Type a tag, then Enter"
+            >
+        </div>
+    </div>
+
     <label class="outfit-publish-option">
         <input type="checkbox" id="outfit-publish">
-        Share this outfit with the community ♡
+        <span>Share this outfit with the community ♡</span>
     </label>
+
+    <div id="outfit-publish-fields" hidden>
+        <label class="outfit-publish-option">
+            <input type="checkbox" id="outfit-anonymous">
+            <span>Anonymous</span>
+        </label>
+
+        <label class="outfit-publish-option">
+            <input type="checkbox" id="outfit-for-sale">
+            <span>For Sale</span>
+        </label>
+    </div>
+
+    <div id="outfit-sale-fields" class="outfit-field" hidden>
+        <label for="outfit-price">Price</label>
+        <div class="outfit-price-field">
+            <span class="outfit-price-prefix" aria-hidden="true">$</span>
+            <input
+                id="outfit-price"
+                type="number"
+                min="0"
+                step="1"
+                value="0.00"
+            >
+        </div>
+    </div>
 
     <button
         type="button"
@@ -172,7 +211,11 @@
         class="saved-outfit-card"
         data-outfit-id="{{ outfit.id }}"
         data-description="{{ outfit.description }}"
+        data-tags="{{ outfit.tags|join:',' }}"
         data-publish="{% if outfit.publish %}true{% else %}false{% endif %}"
+        data-anonymous="{% if outfit.anonymous %}true{% else %}false{% endif %}"
+        data-for-sale="{% if outfit.for_sale %}true{% else %}false{% endif %}"
+        data-price="{% if outfit.price != None %}{{ outfit.price }}{% else %}0.00{% endif %}"
     >
         <div class="saved-outfit-placements" hidden>
             {% for placement in outfit.clothing_placements.all %}
