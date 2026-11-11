@@ -1,102 +1,19 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     const clothingItems = document.querySelectorAll('.clothing-item');
-    const clothingPositions = {};
     const clothingTransforms = {};
-    const previewArea = document.getElementById('outfit-preview');
-    const placeholder = document.getElementById('preview-placeholder');
     const categoryButtons = document.querySelectorAll('.category');
-
-categoryButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        const selectedCategory = button.dataset.filter;
-
-        categoryButtons.forEach(categoryButton => {
-            categoryButton.classList.toggle(
-                'active',
-                categoryButton === button
-            );
-        });
-
-        clothingItems.forEach(item => {
-    const itemCategory = (item.dataset.category || '').trim().toLowerCase();
-    const clothingCard = item.closest('.clothing-card');
-
-    const shouldHide = selectedCategory !== 'all' &&
-                       itemCategory !== selectedCategory;
-
-    if (clothingCard) {
-        clothingCard.hidden = shouldHide;
-    }
-});
-    });
-});
-
-    clothingItems.forEach(item => {
-        item.setAttribute('aria-pressed', 'false');
-
-        item.addEventListener('click', () => {
-            const isSelected = item.classList.toggle('selected');
-            item.setAttribute('aria-pressed', String(isSelected));
-
-            updatePreview();
-        });
-    });
-
-    
-function updatePreview() {
-    const selectedItems = document.querySelectorAll('.clothing-item.selected');
+    const mannequinStage = document.getElementById('mannequin-stage');
     const clothingLayer = document.getElementById('mannequin-clothing-layer');
     const mannequinHint = document.querySelector('.mannequin-hint');
 
-    clothingLayer.innerHTML = '';
-
-    
-    const categoryPositions = {
-    tops: {
-        top: '19%',
-        left: '50%',
-        width: '57%',
-        height: '27%'
-    },
-    bottoms: {
-        top: '43%',
-        left: '50%',
-        width: '49%',
-        height: '46%'
-    },
-    dresses: {
-        top: '19%',
-        left: '50%',
-        width: '65%',
-        height: '66%'
-    },
-    outerwear: {
-        top: '18%',
-        left: '50%',
-        width: '68%',
-        height: '35%'
-    },
-    shoes: {
-        top: '87%',
-        left: '50%',
-        width: '47%',
-        height: '12%'
-    },
-    accessories: {
-        top: '8%',
-        left: '50%',
-        width: '34%',
-        height: '17%'
-    },
-    other: {
-        top: '28%',
-        left: '50%',
-        width: '45%',
-        height: '30%'
-    }
-};
-
+    const DEFAULT_TRANSFORM = {
+        x: 0.5,
+        y: 0.5,
+        rotation: 0,
+        scale: 1,
+    };
+    const MANNEQUIN_SLOT_WIDTH = 0.7;
+    const MANNEQUIN_SLOT_HEIGHT = 0.9;
 
     const categoryOrder = {
         bottoms: 1,
@@ -105,106 +22,192 @@ function updatePreview() {
         tops: 4,
         outerwear: 5,
         accessories: 6,
-        other: 7
+        other: 7,
     };
 
-    selectedItems.forEach(item => {
-        const image = item.querySelector('img');
-        if (!image) return;
+    function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+    }
 
-        const category = item.dataset.category || 'other';
-        const position = categoryPositions[category] || categoryPositions.other;
+    function roundTransform(value) {
+        return Math.round(value * 10000) / 10000;
+    }
 
-        const clothingImage = document.createElement('img');
+    function parseTransform(source) {
+        const transform = { ...DEFAULT_TRANSFORM };
 
-        clothingImage.src = image.src;
-        clothingImage.alt = image.alt;
-        clothingImage.className = 'mannequin-clothing';
-        clothingImage.dataset.itemId = item.dataset.itemId;
+        if (!source) {
+            return transform;
+        }
 
-        const savedPosition = clothingPositions[item.dataset.itemId];
+        const read = (key, fallback) => {
+            const value = Number(source[key]);
+            return Number.isFinite(value) ? value : fallback;
+        };
 
-clothingImage.style.top = savedPosition ? savedPosition.top : position.top;
-clothingImage.style.left = savedPosition ? savedPosition.left : position.left;
-        clothingImage.style.width = position.width;
-        clothingImage.style.height = position.height;
-        clothingImage.style.zIndex = categoryOrder[category] || 7;
+        transform.x = read('x', transform.x);
+        transform.y = read('y', transform.y);
+        transform.rotation = read('rotation', transform.rotation);
+        transform.scale = read('scale', transform.scale);
+        return transform;
+    }
 
-        clothingLayer.appendChild(clothingImage);
-        if (!clothingTransforms[item.dataset.itemId]) {
-    clothingTransforms[item.dataset.itemId] = {
-        x: parseFloat(position.left) / 100,
-        y: parseFloat(position.top) / 100,
-        rotation: 0,
-        scale: 1
-    };
-}
+    function readItemTransform(item) {
+        return parseTransform({
+            x: item.dataset.transformX,
+            y: item.dataset.transformY,
+            rotation: item.dataset.transformRotation,
+            scale: item.dataset.transformScale,
+        });
+    }
 
+    function applySlotTransform(slot, transform) {
+        const shiftX = ((transform.x - 0.5) / MANNEQUIN_SLOT_WIDTH) * 100;
+        const shiftY = ((transform.y - 0.5) / MANNEQUIN_SLOT_HEIGHT) * 100;
+        slot.style.transform =
+            `translate(${shiftX}%, ${shiftY}%) rotate(${transform.rotation}deg) scale(${transform.scale})`;
+    }
 
-clothingImage.draggable = false;
+    function getActiveTransform(item) {
+        const id = item.dataset.itemId;
+        if (!clothingTransforms[id]) {
+            clothingTransforms[id] = readItemTransform(item);
+        }
+        return clothingTransforms[id];
+    }
 
-clothingImage.addEventListener('pointerdown', event => {
-    event.preventDefault();
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const selectedCategory = button.dataset.filter;
 
-    const stage = document.getElementById('mannequin-stage');
-    const stageRect = stage.getBoundingClientRect();
-    const imageRect = clothingImage.getBoundingClientRect();
+            categoryButtons.forEach(categoryButton => {
+                categoryButton.classList.toggle(
+                    'active',
+                    categoryButton === button
+                );
+            });
 
-    const startX = event.clientX;
-    const startY = event.clientY;
+            clothingItems.forEach(item => {
+                const itemCategory = (item.dataset.category || '').trim().toLowerCase();
+                const clothingCard = item.closest('.clothing-card');
+                const shouldHide =
+                    selectedCategory !== 'all' && itemCategory !== selectedCategory;
 
-    const originalLeft = imageRect.left + imageRect.width / 2 - stageRect.left;
-    const originalTop = imageRect.top - stageRect.top;
-
-    clothingImage.setPointerCapture(event.pointerId);
-
-    const moveClothing = moveEvent => {
-        const deltaX = moveEvent.clientX - startX;
-        const deltaY = moveEvent.clientY - startY;
-
-        const newLeft = Math.max(
-            imageRect.width / 2,
-            Math.min(stageRect.width - imageRect.width / 2, originalLeft + deltaX)
-        );
-
-        const newTop = Math.max(
-            0,
-            Math.min(stageRect.height - imageRect.height, originalTop + deltaY)
-        );
-
-        clothingImage.style.left = `${newLeft}px`;
-        clothingImage.style.top = `${newTop}px`;
-        clothingPositions[clothingImage.dataset.itemId] = {
-    left: `${newLeft}px`,
-    top: `${newTop}px`
-};
-clothingTransforms[clothingImage.dataset.itemId] = {
-    x: newLeft / stageRect.width,
-    y: newTop / stageRect.height,
-    rotation: 0,
-    scale: 1
-};
-    };
-
-    const stopDragging = () => {
-        clothingImage.removeEventListener('pointermove', moveClothing);
-        clothingImage.removeEventListener('pointerup', stopDragging);
-        clothingImage.removeEventListener('pointercancel', stopDragging);
-    };
-
-    clothingImage.addEventListener('pointermove', moveClothing);
-    clothingImage.addEventListener('pointerup', stopDragging);
-    clothingImage.addEventListener('pointercancel', stopDragging);
-});
-
-
+                if (clothingCard) {
+                    clothingCard.hidden = shouldHide;
+                }
+            });
+        });
     });
 
-    mannequinHint.textContent = selectedItems.length
-        ? 'Your outfit is coming together! ♡'
-        : 'Choose clothing from your wardrobe to style your mannequin ♡';
-}
+    clothingItems.forEach(item => {
+        item.setAttribute('aria-pressed', 'false');
 
+        item.addEventListener('click', () => {
+            const isSelected = item.classList.toggle('selected');
+            item.setAttribute('aria-pressed', String(isSelected));
+
+            if (!isSelected) {
+                delete clothingTransforms[item.dataset.itemId];
+            } else {
+                clothingTransforms[item.dataset.itemId] = readItemTransform(item);
+            }
+
+            updatePreview();
+        });
+    });
+
+    function bindSlotDrag(slot, itemId) {
+        let isDragging = false;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+
+        slot.addEventListener('pointerdown', event => {
+            if (event.button) {
+                return;
+            }
+
+            event.preventDefault();
+            const transform = clothingTransforms[itemId];
+            if (!transform) {
+                return;
+            }
+
+            const frameRect = mannequinStage.getBoundingClientRect();
+            slot.setPointerCapture(event.pointerId);
+            isDragging = true;
+            dragOffsetX =
+                event.clientX - (frameRect.left + transform.x * frameRect.width);
+            dragOffsetY =
+                event.clientY - (frameRect.top + transform.y * frameRect.height);
+        });
+
+        slot.addEventListener('pointermove', event => {
+            if (!isDragging) {
+                return;
+            }
+
+            const transform = clothingTransforms[itemId];
+            if (!transform) {
+                return;
+            }
+
+            const frameRect = mannequinStage.getBoundingClientRect();
+            transform.x = roundTransform(clamp(
+                (event.clientX - dragOffsetX - frameRect.left) / frameRect.width,
+                -0.25,
+                1.25,
+            ));
+            transform.y = roundTransform(clamp(
+                (event.clientY - dragOffsetY - frameRect.top) / frameRect.height,
+                -0.25,
+                1.25,
+            ));
+            applySlotTransform(slot, transform);
+        });
+
+        const stopDragging = () => {
+            isDragging = false;
+        };
+
+        slot.addEventListener('pointerup', stopDragging);
+        slot.addEventListener('pointercancel', stopDragging);
+    }
+
+    function updatePreview() {
+        const selectedItems = document.querySelectorAll('.clothing-item.selected');
+        clothingLayer.replaceChildren();
+
+        selectedItems.forEach(item => {
+            const image = item.querySelector('img');
+            if (!image) {
+                return;
+            }
+
+            const category = (item.dataset.category || 'other').toLowerCase();
+            const transform = getActiveTransform(item);
+
+            const slot = document.createElement('div');
+            slot.className = 'mannequin-item-slot outfit-clothing-slot';
+            slot.dataset.itemId = item.dataset.itemId;
+            slot.style.zIndex = String(categoryOrder[category] || 7);
+
+            const clothingImage = document.createElement('img');
+            clothingImage.src = image.src;
+            clothingImage.alt = image.alt;
+            clothingImage.className = 'placed-clothing';
+            clothingImage.draggable = false;
+
+            slot.append(clothingImage);
+            clothingLayer.append(slot);
+            applySlotTransform(slot, transform);
+            bindSlotDrag(slot, item.dataset.itemId);
+        });
+
+        mannequinHint.textContent = selectedItems.length
+            ? 'Your outfit is coming together! ♡'
+            : 'Choose clothing from your wardrobe to style your mannequin ♡';
+    }
 
     const saveButton = document.getElementById('save-outfit');
     const saveStatus = document.getElementById('save-outfit-status');
@@ -214,9 +217,10 @@ clothingTransforms[clothingImage.dataset.itemId] = {
         const description = document.getElementById('outfit-description').value.trim();
         const publish = document.getElementById('outfit-publish').checked;
 
-        const clothingIds = Array.from(
+        const selectedItems = Array.from(
             document.querySelectorAll('.clothing-item.selected')
-        ).map(item => item.dataset.itemId);
+        );
+        const clothingIds = selectedItems.map(item => item.dataset.itemId);
 
         if (!name) {
             saveStatus.textContent = 'Please name your outfit! ♡';
@@ -227,6 +231,13 @@ clothingTransforms[clothingImage.dataset.itemId] = {
             saveStatus.textContent = 'Select at least one clothing item!';
             return;
         }
+
+        const transformsPayload = {};
+        selectedItems.forEach(item => {
+            transformsPayload[item.dataset.itemId] = {
+                ...getActiveTransform(item),
+            };
+        });
 
         saveButton.disabled = true;
         saveStatus.textContent = 'Saving your outfit... ♡';
@@ -239,20 +250,15 @@ clothingTransforms[clothingImage.dataset.itemId] = {
                     'X-CSRFToken': document.cookie
                         .split('; ')
                         .find(row => row.startsWith('csrftoken='))
-                        ?.split('=')[1] || ''
+                        ?.split('=')[1] || '',
                 },
                 body: JSON.stringify({
-    name: name,
-    description: description,
-    clothing_ids: clothingIds,
-    clothing_transforms: Object.fromEntries(
-        clothingIds.map(id => [
-            id,
-            clothingTransforms[id]
-        ]).filter(([, transform]) => transform !== undefined)
-    ),
-    publish: publish
-})
+                    name,
+                    description,
+                    clothing_ids: clothingIds,
+                    clothing_transforms: transformsPayload,
+                    publish,
+                }),
             });
 
             const data = await response.json();
@@ -263,7 +269,6 @@ clothingTransforms[clothingImage.dataset.itemId] = {
 
             saveStatus.textContent = 'Outfit saved successfully! ♡';
             window.location.reload();
-
         } catch (error) {
             saveStatus.textContent = error.message;
         } finally {
@@ -293,8 +298,8 @@ clothingTransforms[clothingImage.dataset.itemId] = {
                         'X-CSRFToken': document.cookie
                             .split('; ')
                             .find(row => row.startsWith('csrftoken='))
-                            ?.split('=')[1] || ''
-                    }
+                            ?.split('=')[1] || '',
+                    },
                 });
 
                 const data = await response.json();
@@ -304,7 +309,6 @@ clothingTransforms[clothingImage.dataset.itemId] = {
                 }
 
                 window.location.reload();
-
             } catch (error) {
                 alert(error.message);
                 button.disabled = false;
@@ -313,70 +317,57 @@ clothingTransforms[clothingImage.dataset.itemId] = {
         });
     });
 
-const savedOutfitCards = document.querySelectorAll('.saved-outfit-card');
+    const savedOutfitCards = document.querySelectorAll('.saved-outfit-card');
 
-savedOutfitCards.forEach(card => {
-    card.addEventListener('click', event => {
-        if (event.target.closest('.delete-outfit-btn')) return;
+    savedOutfitCards.forEach(card => {
+        card.addEventListener('click', event => {
+            if (event.target.closest('.delete-outfit-btn')) {
+                return;
+            }
 
-        const placements = card.querySelectorAll(
-            '.saved-outfit-placements [data-clothing-id]'
-        );
-
-        if (!placements.length) {
-            alert('This outfit has no clothing to display.');
-            return;
-        }
-
-        clothingItems.forEach(item => {
-            item.classList.remove('selected');
-            item.setAttribute('aria-pressed', 'false');
-        });
-
-        Object.keys(clothingPositions).forEach(id => {
-            delete clothingPositions[id];
-        });
-
-        Object.keys(clothingTransforms).forEach(id => {
-            delete clothingTransforms[id];
-        });
-
-        placements.forEach(placement => {
-            const id = placement.dataset.clothingId;
-
-            const item = Array.from(clothingItems).find(
-                clothing => clothing.dataset.itemId === id
+            const placements = card.querySelectorAll(
+                '.saved-outfit-placements [data-clothing-id]'
             );
 
-            if (!item) return;
+            if (!placements.length) {
+                alert('This outfit has no clothing to display.');
+                return;
+            }
 
-            item.classList.add('selected');
-            item.setAttribute('aria-pressed', 'true');
+            clothingItems.forEach(item => {
+                item.classList.remove('selected');
+                item.setAttribute('aria-pressed', 'false');
+            });
 
-            const transform = {
-                x: Number(placement.dataset.x),
-                y: Number(placement.dataset.y),
-                rotation: Number(placement.dataset.rotation),
-                scale: Number(placement.dataset.scale)
-            };
+            Object.keys(clothingTransforms).forEach(id => {
+                delete clothingTransforms[id];
+            });
 
-            clothingTransforms[id] = transform;
+            placements.forEach(placement => {
+                const id = placement.dataset.clothingId;
+                const item = Array.from(clothingItems).find(
+                    clothing => clothing.dataset.itemId === id
+                );
 
-            clothingPositions[id] = {
-                left: `${transform.x * 100}%`,
-                top: `${transform.y * 100}%`
-            };
+                if (!item) {
+                    return;
+                }
+
+                item.classList.add('selected');
+                item.setAttribute('aria-pressed', 'true');
+                clothingTransforms[id] = parseTransform({
+                    x: placement.dataset.x,
+                    y: placement.dataset.y,
+                    rotation: placement.dataset.rotation,
+                    scale: placement.dataset.scale,
+                });
+            });
+
+            updatePreview();
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            document.getElementById('outfit-name').value =
+                card.querySelector('.saved-outfit-info h4')?.textContent.trim() || '';
         });
-
-        updatePreview();
-
-        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-        document.getElementById('outfit-name').value =
-            card.querySelector('.saved-outfit-info h4')?.textContent.trim() || '';
     });
 });
-
-});
-
-

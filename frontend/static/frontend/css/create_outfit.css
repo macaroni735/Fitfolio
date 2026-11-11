@@ -1384,102 +1384,34 @@ body {
     border-radius: 22px;
 }
 
-.mannequin-stage {
-    position: relative;
-    width: 260px;
-    height: 440px;
-    max-width: 100%;
-    overflow: hidden;
+.mannequin-stage.mannequin-frame {
+    width: min(260px, 100%);
     background: linear-gradient(180deg, #FFFCFA 0%, #FCECF5 100%);
-    border-radius: 20px;
+    border: 1px solid #F1D6E4;
 }
 
-.mannequin-body {
-    position: absolute;
-    top: 28px;
-    left: 50%;
-    width: 170px;
-    height: 390px;
-    transform: translateX(-50%);
-}
-
-.mannequin-head,
-.mannequin-neck,
-.mannequin-torso,
-.mannequin-arm,
-.mannequin-leg {
-    position: absolute;
-    background: #E8CFC7;
-    border: 1px solid #D9BDB5;
-}
-
-.mannequin-head {
-    top: 0;
-    left: 62px;
-    width: 46px;
-    height: 58px;
-    border-radius: 48% 48% 45% 45%;
-    z-index: 4;
-}
-
-.mannequin-neck {
-    top: 50px;
-    left: 77px;
-    width: 17px;
-    height: 26px;
-    border-radius: 8px;
-    z-index: 2;
-}
-
-.mannequin-torso {
-    top: 69px;
-    left: 42px;
-    width: 86px;
-    height: 143px;
-    border-radius: 35px 35px 25px 25px;
-    z-index: 2;
-}
-
-.mannequin-arm {
-    top: 78px;
-    width: 25px;
-    height: 155px;
-    border-radius: 20px;
-    z-index: 1;
-}
-
-.mannequin-arm-left {
-    left: 22px;
-    transform: rotate(8deg);
-}
-
-.mannequin-arm-right {
-    right: 22px;
-    transform: rotate(-8deg);
-}
-
-.mannequin-leg {
-    top: 195px;
-    width: 32px;
-    height: 175px;
-    border-radius: 16px 16px 12px 12px;
-    z-index: 1;
-}
-
-.mannequin-leg-left {
-    left: 49px;
-    transform: rotate(3deg);
-}
-
-.mannequin-leg-right {
-    right: 49px;
-    transform: rotate(-3deg);
+.mannequin-stage .mannequin-guide {
+    opacity: 0.35;
 }
 
 .mannequin-clothing-layer {
     position: absolute;
     inset: 0;
-    z-index: 5;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.outfit-clothing-slot {
+    pointer-events: auto;
+    cursor: grab;
+    touch-action: none;
+}
+
+.outfit-clothing-slot:active {
+    cursor: grabbing;
+}
+
+.outfit-clothing-slot .placed-clothing {
     pointer-events: none;
 }
 
@@ -1491,69 +1423,4 @@ body {
     font-family: 'Poppins', sans-serif;
     font-size: 12px;
     line-height: 1.7;
-}
-
-
-.mannequin-clothing {
-    position: absolute;
-    transform: translateX(-50%);
-    object-fit: contain;
-    pointer-events: auto;
-    cursor: grab;
-    touch-action: none;
-    user-select: none;
-}
-
-.mannequin-clothing:active {
-    cursor: grabbing;
-}
-.mannequin-stage {
-    position: relative;
-    width: 260px;
-    height: 440px;
-    max-width: 100%;
-    overflow: hidden;
-    border-radius: 20px;
-    background: linear-gradient(180deg, #FFFCFA 0%, #FCECF5 100%);
-}
-
-.mannequin-body {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    transform: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none;
-}
-
-.mannequin-guide {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    user-select: none;
-    pointer-events: none;
-}
-
-.mannequin-clothing-layer {
-    position: absolute;
-    inset: 0;
-    z-index: 5;
-    pointer-events: none;
-}
-
-.mannequin-clothing {
-    position: absolute;
-    object-fit: contain;
-    pointer-events: auto;
-    cursor: grab;
-    touch-action: none;
-    user-select: none;
-}
-
-.mannequin-clothing:active {
-    cursor: grabbing;
 }

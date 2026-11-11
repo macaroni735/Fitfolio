@@ -42,12 +42,22 @@ def home_view(request):
     ).order_by('-created_at')
 
     
+    def clothing_transform(item):
+        transform = item.transform if isinstance(item.transform, dict) else {}
+        return {
+            'x': float(transform.get('x', 0.5)),
+            'y': float(transform.get('y', 0.5)),
+            'rotation': float(transform.get('rotation', 0)),
+            'scale': float(transform.get('scale', 1)),
+        }
+
     wardrobe_data = [
         {
             'id': str(item.id),
             'name': item.display_name,
             'article_type': item.article_type or '',
             'category': item.category or '',
+            'transform': clothing_transform(item),
             'image': (
                 item.final_front_image.url
                 if item.final_front_image

@@ -13,6 +13,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'frontend/css/mannequin.css' %}">
     <link rel="stylesheet" href="{% static 'frontend/css/create_outfit.css' %}">
     <link rel="stylesheet" href="{% static 'frontend/css/navbar.css' %}">
 </head>
@@ -74,6 +75,10 @@
                 class="clothing-item"
                 data-item-id="{{ item.id }}"
                 data-category="{{ item.article_type }}"
+                data-transform-x="{{ item.transform.x }}"
+                data-transform-y="{{ item.transform.y }}"
+                data-transform-rotation="{{ item.transform.rotation }}"
+                data-transform-scale="{{ item.transform.scale }}"
             >
                 {% if item.final_front_image %}
                     <img src="{{ item.final_front_image.url }}" alt="{{ item.display_name }}">
@@ -102,16 +107,13 @@
 
 <div class="preview-area" id="outfit-preview">
     <div class="mannequin-studio" id="mannequin-studio">
-        <div class="mannequin-stage" id="mannequin-stage">
-            <div class="mannequin-body" id="mannequin-body">
-            <div class="mannequin-body" id="mannequin-body">
-    <img
-        src="{% static 'frontend/images/Default Guide.png' %}"
-        alt="Outfit styling mannequin"
-        class="mannequin-guide"
-        draggable="false"
-    >
-</div>
+        <div class="mannequin-frame mannequin-stage" id="mannequin-stage">
+            <img
+                src="{% static 'frontend/images/Default Guide.png' %}"
+                alt="Outfit styling mannequin"
+                class="mannequin-guide"
+                draggable="false"
+            >
             <div class="mannequin-clothing-layer" id="mannequin-clothing-layer"></div>
         </div>
         <p class="mannequin-hint">Choose clothing from your wardrobe to style your mannequin ♡</p>

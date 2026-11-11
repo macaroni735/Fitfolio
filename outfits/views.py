@@ -64,7 +64,7 @@ def save_outfit(request):
             if not math.isfinite(value):
                 return JsonResponse({"error": "Invalid transform value."}, status=400)
 
-        if not (0 <= transform["x"] <= 1 and 0 <= transform["y"] <= 1):
+        if not (-0.25 <= transform["x"] <= 1.25 and -0.25 <= transform["y"] <= 1.25):
             return JsonResponse({"error": "Clothing position is out of bounds."}, status=400)
 
         if not (-360 <= transform["rotation"] <= 360):

@@ -12,6 +12,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="{% static 'frontend/css/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'frontend/css/mannequin.css' %}">
     <link rel="stylesheet" href="{% static 'frontend/css/home.css' %}">
 </head>
 
@@ -44,17 +45,14 @@
 
                 
 <div class="mannequin-display">
-    <div class="home-mannequin-stage" id="home-mannequin-stage">
-        <div class="home-mannequin-body">
-            <div class="home-mannequin-head"></div>
-            <div class="home-mannequin-neck"></div>
-            <div class="home-mannequin-torso"></div>
-            <div class="home-mannequin-arm home-mannequin-arm-left"></div>
-            <div class="home-mannequin-arm home-mannequin-arm-right"></div>
-            <div class="home-mannequin-leg home-mannequin-leg-left"></div>
-            <div class="home-mannequin-leg home-mannequin-leg-right"></div>
-        </div>
-
+    <div class="mannequin-frame home-mannequin-stage" id="home-mannequin-stage">
+        <img
+            src="{% static 'frontend/images/Default Guide.png' %}"
+            alt=""
+            class="mannequin-guide"
+            draggable="false"
+            aria-hidden="true"
+        >
         <div class="home-mannequin-clothing-layer" id="home-mannequin-clothing-layer"></div>
     </div>
 </div>
