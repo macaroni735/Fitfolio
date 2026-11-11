@@ -27,6 +27,7 @@ def save_outfit(request):
     clothing_ids = data.get("clothing_ids", [])
     clothing_transforms = data.get("clothing_transforms", {})
     publish = data.get("publish", False)
+    outfit_id = data.get("outfit_id")
 
     if not name or len(name) > 100:
         return JsonResponse({"error": "Enter a valid outfit name."}, status=400)
@@ -88,13 +89,35 @@ def save_outfit(request):
             "error": "To share this outfit, all selected clothing items must be public."
         }, status=400)
 
+    existing_outfit = None
+    if outfit_id not in (None, ""):
+        try:
+            existing_outfit = Outfit.objects.filter(
+                id=outfit_id,
+                user=request.user,
+            ).first()
+        except (ValueError, TypeError):
+            existing_outfit = None
+
+        if existing_outfit is None:
+            return JsonResponse({"error": "Outfit not found."}, status=404)
+
     with transaction.atomic():
-        outfit = Outfit.objects.create(
-            user=request.user,
-            display_name=name,
-            description=description,
-            publish=publish
-        )
+        if existing_outfit is not None:
+            outfit = existing_outfit
+            outfit.display_name = name
+            outfit.description = description
+            outfit.publish = publish
+            outfit.save(update_fields=["display_name", "description", "publish"])
+            created = False
+        else:
+            outfit = Outfit.objects.create(
+                user=request.user,
+                display_name=name,
+                description=description,
+                publish=publish,
+            )
+            created = True
 
         outfit.clothing.set(clothing)
 
@@ -110,8 +133,12 @@ def save_outfit(request):
     return JsonResponse({
         "success": True,
         "outfit_id": str(outfit.id),
-        "message": "Outfit saved successfully!"
-    }, status=201)
+        "message": (
+            "Outfit updated successfully!"
+            if not created
+            else "Outfit saved successfully!"
+        ),
+    }, status=200 if not created else 201)
 
 
 @login_required

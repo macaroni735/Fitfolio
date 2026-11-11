@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mannequinStage = document.getElementById('mannequin-stage');
     const clothingLayer = document.getElementById('mannequin-clothing-layer');
     const mannequinHint = document.querySelector('.mannequin-hint');
+    let editingOutfitId = null;
 
     const DEFAULT_TRANSFORM = {
         x: 0.5,
@@ -240,9 +241,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         saveButton.disabled = true;
-        saveStatus.textContent = 'Saving your outfit... ♡';
+        saveStatus.textContent = editingOutfitId
+            ? 'Updating your outfit... ♡'
+            : 'Saving your outfit... ♡';
 
         try {
+            const payload = {
+                name,
+                description,
+                clothing_ids: clothingIds,
+                clothing_transforms: transformsPayload,
+                publish,
+            };
+            if (editingOutfitId) {
+                payload.outfit_id = editingOutfitId;
+            }
+
             const response = await fetch('/outfits/save/', {
                 method: 'POST',
                 headers: {
@@ -252,13 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         .find(row => row.startsWith('csrftoken='))
                         ?.split('=')[1] || '',
                 },
-                body: JSON.stringify({
-                    name,
-                    description,
-                    clothing_ids: clothingIds,
-                    clothing_transforms: transformsPayload,
-                    publish,
-                }),
+                body: JSON.stringify(payload),
             });
 
             const data = await response.json();
@@ -267,7 +275,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || 'Could not save outfit.');
             }
 
-            saveStatus.textContent = 'Outfit saved successfully! ♡';
+            saveStatus.textContent = editingOutfitId
+                ? 'Outfit updated successfully! ♡'
+                : 'Outfit saved successfully! ♡';
             window.location.reload();
         } catch (error) {
             saveStatus.textContent = error.message;
@@ -366,8 +376,14 @@ document.addEventListener('DOMContentLoaded', () => {
             updatePreview();
             card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
+            editingOutfitId = card.dataset.outfitId || null;
             document.getElementById('outfit-name').value =
                 card.querySelector('.saved-outfit-info h4')?.textContent.trim() || '';
+            document.getElementById('outfit-description').value =
+                card.dataset.description || '';
+            document.getElementById('outfit-publish').checked =
+                String(card.dataset.publish || '').toLowerCase() === 'true';
+            saveStatus.textContent = 'Editing saved outfit. Save will replace this look. ♡';
         });
     });
 });

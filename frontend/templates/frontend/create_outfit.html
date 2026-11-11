@@ -168,7 +168,12 @@
     </div>
 
 {% for outfit in saved_outfits %}
-    <div class="saved-outfit-card" data-outfit-id="{{ outfit.id }}">
+    <div
+        class="saved-outfit-card"
+        data-outfit-id="{{ outfit.id }}"
+        data-description="{{ outfit.description }}"
+        data-publish="{% if outfit.publish %}true{% else %}false{% endif %}"
+    >
         <div class="saved-outfit-placements" hidden>
             {% for placement in outfit.clothing_placements.all %}
                 <span
