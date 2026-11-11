@@ -25,6 +25,10 @@ class Outfit(models.Model):
     publish = models.BooleanField(default=False)
     anonymous = models.BooleanField(default=False)
     for_sale = models.BooleanField(default=False)
+    thumbnail = models.ImageField(
+        upload_to="outfits/thumbnails/",
+        blank=True,
+    )
     clothing = models.ManyToManyField(
         Clothing,
         through="OutfitClothing",

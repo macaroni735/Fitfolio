@@ -488,6 +488,16 @@ body {
     font-size: 20px;
 }
 
+.saved-outfit-thumb {
+    width: 56px;
+    height: 74px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid #F1D6E4;
+    background: #FFF9FC;
+}
+
 .saved-outfit-info {
     min-width: 0;
 }

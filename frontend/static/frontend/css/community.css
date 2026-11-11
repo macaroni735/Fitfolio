@@ -289,6 +289,16 @@ main {
     border-color: #E1E9D9;
 }
 
+.community-outfits .outfit-thumb {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    margin: 0 0 14px;
+    object-fit: cover;
+    border-radius: 14px;
+    background: #FFF9FC;
+}
+
 .community-outfits .outfit-tags span {
     background: #E8F0E2;
     color: #65845F;

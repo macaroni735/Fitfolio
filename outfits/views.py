@@ -1,6 +1,7 @@
 
 import json
 import math
+from pathlib import Path
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from django.contrib.auth.decorators import login_required
@@ -8,6 +9,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db import transaction
 
+from clothing.images import InvalidClothingImage, prepare_uploaded_image
 from clothing.models import Clothing
 from clothing.tags import normalize_tags
 from .models import Outfit, OutfitClothing
@@ -16,12 +18,8 @@ from .models import Outfit, OutfitClothing
 @login_required
 @require_POST
 def save_outfit(request):
-    try:
-        data = json.loads(request.body)
-    except (json.JSONDecodeError, UnicodeDecodeError):
-        return JsonResponse({"error": "Invalid request."}, status=400)
-
-    if not isinstance(data, dict):
+    data, thumbnail_upload = _parse_save_request(request)
+    if data is None:
         return JsonResponse({"error": "Invalid request."}, status=400)
 
     name = str(data.get("name", "")).strip()
@@ -102,6 +100,13 @@ def save_outfit(request):
             "error": "To share this outfit, all selected clothing items must be public."
         }, status=400)
 
+    thumbnail = None
+    if thumbnail_upload is not None:
+        try:
+            thumbnail = prepare_uploaded_image(thumbnail_upload)
+        except InvalidClothingImage as error:
+            return JsonResponse({"error": str(error)}, status=400)
+
     existing_outfit = None
     if outfit_id not in (None, ""):
         try:
@@ -159,6 +164,9 @@ def save_outfit(request):
                     clothing=item
                 ).update(transform=transform)
 
+        if thumbnail is not None:
+            _assign_thumbnail(outfit, thumbnail)
+
     return JsonResponse({
         "success": True,
         "outfit_id": str(outfit.id),
@@ -168,6 +176,47 @@ def save_outfit(request):
             else "Outfit saved successfully!"
         ),
     }, status=200 if not created else 201)
+
+
+def _parse_save_request(request):
+    content_type = (request.content_type or "").split(";")[0].strip().lower()
+
+    if content_type == "multipart/form-data":
+        raw = request.POST.get("data", "")
+        try:
+            data = json.loads(raw)
+        except (json.JSONDecodeError, TypeError, UnicodeDecodeError):
+            return None, None
+
+        if not isinstance(data, dict):
+            return None, None
+
+        return data, request.FILES.get("thumbnail")
+
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return None, None
+
+    if not isinstance(data, dict):
+        return None, None
+
+    return data, None
+
+
+def _assign_thumbnail(outfit, uploaded_file):
+    extension = Path(getattr(uploaded_file, "name", "")).suffix.lower()
+    if extension not in {".png", ".jpg", ".jpeg", ".webp"}:
+        extension = ".png"
+
+    if outfit.thumbnail:
+        outfit.thumbnail.delete(save=False)
+
+    outfit.thumbnail.save(
+        f"{outfit.id}_thumbnail{extension}",
+        uploaded_file,
+        save=True,
+    )
 
 
 def _parse_price(value, for_sale):
@@ -198,6 +247,9 @@ def delete_outfit(request, outfit_id):
             {"error": "Outfit not found."},
             status=404
         )
+
+    if outfit.thumbnail:
+        outfit.thumbnail.delete(save=False)
 
     outfit.delete()
 

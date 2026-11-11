@@ -229,9 +229,17 @@
             {% endfor %}
         </div>
 
-        <div class="saved-outfit-icon">
-            <i class="fa-solid fa-shirt"></i>
-        </div>
+        {% if outfit.thumbnail %}
+            <img
+                class="saved-outfit-thumb"
+                src="{{ outfit.thumbnail.url }}"
+                alt="{{ outfit.display_name }} thumbnail"
+            >
+        {% else %}
+            <div class="saved-outfit-icon">
+                <i class="fa-solid fa-shirt"></i>
+            </div>
+        {% endif %}
 
         <div class="saved-outfit-info">
             <h4>{{ outfit.display_name }}</h4>

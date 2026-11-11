@@ -69,6 +69,124 @@ document.addEventListener('DOMContentLoaded', () => {
             `translate(${shiftX}%, ${shiftY}%) rotate(${transform.rotation}deg) scale(${transform.scale})`;
     }
 
+    function loadImageFromUrl(src) {
+        return new Promise((resolve, reject) => {
+            const image = new Image();
+            image.crossOrigin = 'anonymous';
+            image.onload = () => resolve(image);
+            image.onerror = () => reject(new Error('Could not load image.'));
+            image.src = src;
+        });
+    }
+
+    function drawContainedImage(ctx, image, x, y, width, height) {
+        const imageRatio = image.naturalWidth / image.naturalHeight;
+        const boxRatio = width / height;
+        let drawWidth = width;
+        let drawHeight = height;
+        let drawX = x;
+        let drawY = y;
+
+        if (imageRatio > boxRatio) {
+            drawHeight = width / imageRatio;
+            drawY = y + (height - drawHeight) / 2;
+        } else {
+            drawWidth = height * imageRatio;
+            drawX = x + (width - drawWidth) / 2;
+        }
+
+        ctx.drawImage(image, drawX, drawY, drawWidth, drawHeight);
+    }
+
+    function canvasToBlob(sourceCanvas, type, quality) {
+        return new Promise((resolve, reject) => {
+            sourceCanvas.toBlob(blob => {
+                if (blob) {
+                    resolve(blob);
+                    return;
+                }
+                reject(new Error('Could not create outfit thumbnail.'));
+            }, type, quality);
+        });
+    }
+
+    async function captureOutfitThumbnail(selectedItems) {
+        const width = 600;
+        const height = 800;
+        const slotWidth = MANNEQUIN_SLOT_WIDTH * width;
+        const slotHeight = MANNEQUIN_SLOT_HEIGHT * height;
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, height);
+        gradient.addColorStop(0, '#FFFCFA');
+        gradient.addColorStop(1, '#FCECF5');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+
+        const guideElement = document.querySelector('.mannequin-guide');
+        if (guideElement?.src) {
+            try {
+                const guideImage = await loadImageFromUrl(guideElement.src);
+                ctx.globalAlpha = 0.35;
+                drawContainedImage(
+                    ctx,
+                    guideImage,
+                    (1 - MANNEQUIN_SLOT_WIDTH) / 2 * width,
+                    0.05 * height,
+                    slotWidth,
+                    slotHeight,
+                );
+                ctx.globalAlpha = 1;
+            } catch {
+                // Guide is decorative; continue without it.
+            }
+        }
+
+        const orderedItems = Array.from(selectedItems).sort((left, right) => {
+            const leftCategory = (left.dataset.category || 'other').toLowerCase();
+            const rightCategory = (right.dataset.category || 'other').toLowerCase();
+            return (categoryOrder[leftCategory] || 7) - (categoryOrder[rightCategory] || 7);
+        });
+
+        for (const item of orderedItems) {
+            const previewImage = item.querySelector('img');
+            if (!previewImage?.src) {
+                continue;
+            }
+
+            let clothingImage;
+            try {
+                clothingImage = await loadImageFromUrl(previewImage.src);
+            } catch {
+                continue;
+            }
+
+            const transform = getActiveTransform(item);
+            ctx.save();
+            ctx.translate(transform.x * width, transform.y * height);
+            ctx.rotate((transform.rotation * Math.PI) / 180);
+            ctx.scale(transform.scale, transform.scale);
+            drawContainedImage(
+                ctx,
+                clothingImage,
+                -slotWidth / 2,
+                -slotHeight / 2,
+                slotWidth,
+                slotHeight,
+            );
+            ctx.restore();
+        }
+
+        try {
+            return await canvasToBlob(canvas, 'image/png');
+        } catch {
+            return canvasToBlob(canvas, 'image/jpeg', 0.92);
+        }
+    }
+
     function getActiveTransform(item) {
         const id = item.dataset.itemId;
         if (!clothingTransforms[id]) {
@@ -415,16 +533,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 payload.outfit_id = editingOutfitId;
             }
 
+            const formData = new FormData();
+            formData.append('data', JSON.stringify(payload));
+
+            try {
+                const thumbnailBlob = await captureOutfitThumbnail(selectedItems);
+                if (thumbnailBlob) {
+                    const extension = thumbnailBlob.type === 'image/jpeg' ? 'jpg' : 'png';
+                    formData.append(
+                        'thumbnail',
+                        thumbnailBlob,
+                        `outfit-thumbnail.${extension}`,
+                    );
+                }
+            } catch {
+                // Outfit still saves if thumbnail capture fails.
+            }
+
             const response = await fetch('/outfits/save/', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRFToken': document.cookie
                         .split('; ')
                         .find(row => row.startsWith('csrftoken='))
                         ?.split('=')[1] || '',
                 },
-                body: JSON.stringify(payload),
+                body: formData,
             });
 
             const data = await response.json();

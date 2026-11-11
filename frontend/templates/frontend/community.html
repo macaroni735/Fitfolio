@@ -120,6 +120,15 @@
     <div class="clothing-grid">
         {% for outfit in public_outfits %}
             <article class="outfit-card">
+                {% if outfit.thumbnail %}
+                    <img
+                        class="outfit-thumb"
+                        src="{{ outfit.thumbnail.url }}"
+                        alt="{{ outfit.display_name }}"
+                        width="200"
+                    >
+                {% endif %}
+
                 <h2>{{ outfit.display_name }}</h2>
 
                 <p>{{ outfit.description }}</p>
