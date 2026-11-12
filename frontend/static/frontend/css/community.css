@@ -39,9 +39,8 @@ main {
 
 .community-filters {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 16px;
+    flex-direction: column;
+    gap: 22px;
     padding: 30px 35px;
     margin: 0;
     background: #FFFCFA;
@@ -52,22 +51,185 @@ main {
 
 .community-filters h2 {
     width: 100%;
-    margin: 0 0 12px;
+    margin: 0;
     font-family: 'Playfair Display', serif;
     font-size: 26px;
     font-weight: 600;
     color: #4B4560;
 }
 
-.community-filters label {
+.filter-section {
+    margin: 0;
+    padding: 0;
+    border: none;
+    min-width: 0;
+}
+
+.filter-section legend {
+    margin: 0 0 10px;
+    padding: 0;
     font-size: 13px;
     font-weight: 600;
     color: #4B4560;
 }
 
-.community-filters select,
-.community-filters input[type="text"] {
-    min-width: 0;
+.filter-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.filter-chip input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.filter-chip span {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    border: 1px solid #F1D6E4;
+    border-radius: 999px;
+    background: #FFF9FC;
+    color: #4B4560;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.filter-chip input:checked + span {
+    background: #FCECF5;
+    border-color: #D878A8;
+    color: #D878A8;
+}
+
+.filter-chip.compact span {
+    padding: 6px 12px;
+    font-size: 11px;
+}
+
+.search-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.search-mode-toggle {
+    display: inline-flex;
+    gap: 0;
+    padding: 3px;
+    border: 1px solid #F1D6E4;
+    border-radius: 999px;
+    background: #FFF5FA;
+    width: fit-content;
+}
+
+.search-mode-btn {
+    padding: 8px 16px !important;
+    border: none !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    color: #81798D !important;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px !important;
+    font-weight: 600;
+    cursor: pointer;
+    transform: none !important;
+}
+
+.search-mode-btn.active {
+    background: #D878A8 !important;
+    color: #FFFCFA !important;
+}
+
+.search-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.search-panel[hidden] {
+    display: none !important;
+}
+
+.tag-match-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.community-tag-input {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 8px 10px;
+    border: 1px solid #F1D6E4;
+    border-radius: 12px;
+    background: #FFF9FC;
+}
+
+.community-tag-input input {
+    flex: 1 1 140px;
+    min-width: 120px;
+    margin: 0;
+    padding: 4px 0;
+    border: none;
+    background: transparent;
+    color: #4B4560;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    outline: none;
+}
+
+.community-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.community-tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #FCECF5;
+    color: #D878A8;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.community-tag-remove {
+    width: auto;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: inherit !important;
+    font-size: 14px !important;
+    line-height: 1;
+    cursor: pointer;
+    transform: none !important;
+}
+
+.search-field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #81798D;
+}
+
+#keyword-query,
+#budget {
+    width: 100%;
+    max-width: 320px;
     padding: 12px 14px;
     border: 1px solid #F1D6E4;
     border-radius: 12px;
@@ -78,20 +240,51 @@ main {
     outline: none;
 }
 
-.community-filters select:focus,
-.community-filters input[type="text"]:focus {
+#keyword-query:focus,
+#budget:focus {
     border-color: #D878A8;
     box-shadow: 0 0 0 3px rgba(216, 120, 168, 0.15);
 }
 
-.community-filters input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: #D878A8;
-    cursor: pointer;
+.sale-section {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px;
 }
 
-.community-filters button {
+.budget-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.budget-field[hidden] {
+    display: none !important;
+}
+
+.budget-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #81798D;
+}
+
+.budget-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #8A8298;
+    font-weight: 600;
+}
+
+.filter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+}
+
+.community-filters .filter-actions button {
     padding: 12px 22px;
     border: none;
     border-radius: 50px;
@@ -104,19 +297,19 @@ main {
     transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.community-filters button:hover {
+.community-filters .filter-actions button:hover {
     background: #C96697;
     transform: translateY(-2px);
 }
 
-.community-filters a {
+.community-filters .filter-actions a {
     color: #D878A8;
     text-decoration: none;
     font-size: 13px;
     font-weight: 600;
 }
 
-.community-filters a:hover {
+.community-filters .filter-actions a:hover {
     text-decoration: underline;
 }
 
@@ -127,7 +320,9 @@ main {
     align-items: stretch;
 }
 
-.clothing-grid article {
+.clothing-grid article,
+.clothing-grid .feed-card {
+    position: relative;
     min-width: 0;
     padding: 20px;
     background: #FFFCFA;
@@ -138,12 +333,49 @@ main {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.clothing-grid article:hover {
+.clothing-grid article:hover,
+.clothing-grid .feed-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 28px rgba(75, 69, 96, 0.12);
 }
 
-.clothing-grid article img {
+.clothing-grid .outfit-card {
+    background: #F8F9F1;
+    border-color: #E1E9D9;
+}
+
+.feed-kind-badge {
+    display: inline-flex;
+    margin-bottom: 12px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.feed-kind-badge.clothing {
+    background: #FCECF5;
+    color: #D878A8;
+}
+
+.feed-kind-badge.outfit {
+    background: #E8F0E2;
+    color: #65845F;
+}
+
+.feed-empty {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 28px;
+    text-align: center;
+    color: #81798D;
+    background: #FFFCFA;
+    border: 1px dashed #F1D6E4;
+    border-radius: 18px;
+}
+
+.clothing-grid article img,
+.clothing-grid .feed-card img {
     display: block;
     width: 100%;
     height: 230px;
@@ -151,6 +383,11 @@ main {
     object-fit: contain;
     background: #FFF5FA;
     border-radius: 15px;
+}
+
+.clothing-grid .outfit-card img {
+    object-fit: cover;
+    background: #F3F7EE;
 }
 
 .clothing-grid article h2 {
@@ -272,34 +509,7 @@ main {
     transform: translateX(-50%);
 }
 
-.community-outfits {
-    margin-top: 15px;
-}
-
-.community-outfits > h2 {
-    margin: 0 0 25px;
-    font-family: 'Playfair Display', serif;
-    font-size: 32px;
-    font-weight: 600;
-    color: #4B4560;
-}
-
-.community-outfits .outfit-card {
-    background: #F8F9F1;
-    border-color: #E1E9D9;
-}
-
-.community-outfits .outfit-thumb {
-    display: block;
-    width: 100%;
-    aspect-ratio: 3 / 4;
-    margin: 0 0 14px;
-    object-fit: cover;
-    border-radius: 14px;
-    background: #FFF9FC;
-}
-
-.community-outfits .outfit-tags span {
+.clothing-grid .outfit-card > span {
     background: #E8F0E2;
     color: #65845F;
 }
@@ -361,20 +571,20 @@ main {
 
     .community-filters {
         padding: 22px;
-        flex-direction: column;
-        align-items: stretch;
     }
 
     .clothing-grid {
         grid-template-columns: 1fr;
     }
 
-    .clothing-grid article img {
+    .clothing-grid article img,
+    .clothing-grid .feed-card img {
         height: 230px;
     }
 
-    .community-outfits > h2 {
-        font-size: 27px;
+    #keyword-query,
+    #budget {
+        max-width: none;
     }
 }
 
