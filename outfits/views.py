@@ -14,6 +14,8 @@ from clothing.models import Clothing
 from clothing.tags import normalize_tags
 from .models import Outfit, OutfitClothing
 
+CATEGORY_VALUES = {"womens", "mens", "unisex", "kids"}
+
 
 @login_required
 @require_POST
@@ -24,6 +26,7 @@ def save_outfit(request):
 
     name = str(data.get("name", "")).strip()
     description = str(data.get("description", "")).strip()
+    category = _choice(data.get("category"), CATEGORY_VALUES, "unisex")
     clothing_ids = data.get("clothing_ids", [])
     clothing_transforms = data.get("clothing_transforms", {})
     publish = data.get("publish", False)
@@ -125,6 +128,7 @@ def save_outfit(request):
             outfit = existing_outfit
             outfit.display_name = name
             outfit.description = description
+            outfit.category = category
             outfit.tags = tags
             outfit.price = price
             outfit.publish = publish
@@ -133,6 +137,7 @@ def save_outfit(request):
             outfit.save(update_fields=[
                 "display_name",
                 "description",
+                "category",
                 "tags",
                 "price",
                 "publish",
@@ -145,6 +150,7 @@ def save_outfit(request):
                 user=request.user,
                 display_name=name,
                 description=description,
+                category=category,
                 tags=tags,
                 price=price,
                 publish=publish,
@@ -217,6 +223,11 @@ def _assign_thumbnail(outfit, uploaded_file):
         uploaded_file,
         save=True,
     )
+
+
+def _choice(value, allowed, default):
+    value = str(value or "").strip()
+    return value if value in allowed else default
 
 
 def _parse_price(value, for_sale):

@@ -162,8 +162,13 @@ def community_view(request):
 
     public_clothing = public_clothing.order_by('-created_at')
     public_outfits = Outfit.objects.filter(
-    publish=True
-).select_related('user').prefetch_related('clothing').order_by('-created_at')
+        publish=True
+    ).select_related('user').prefetch_related('clothing')
+
+    if category:
+        public_outfits = public_outfits.filter(category=category)
+
+    public_outfits = public_outfits.order_by('-created_at')
     return render(request, 'frontend/community.html', {
         'public_clothing': public_clothing,
         'public_outfits': public_outfits,

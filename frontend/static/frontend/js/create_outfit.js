@@ -518,9 +518,11 @@ document.addEventListener('DOMContentLoaded', () => {
             : 'Saving your outfit... ♡';
 
         try {
+            const category = document.getElementById('outfit-category').value || 'unisex';
             const payload = {
                 name,
                 description,
+                category,
                 clothing_ids: clothingIds,
                 clothing_transforms: transformsPayload,
                 tags: outfitTags,
@@ -673,6 +675,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.querySelector('.saved-outfit-info h4')?.textContent.trim() || '';
             document.getElementById('outfit-description').value =
                 card.dataset.description || '';
+            document.getElementById('outfit-category').value =
+                card.dataset.category || 'unisex';
             outfitTags = parseTags(card.dataset.tags || '');
             renderTags();
             publishCheckbox.checked =

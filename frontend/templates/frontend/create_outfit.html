@@ -143,6 +143,14 @@
         rows="3"
     ></textarea>
 
+    <label for="outfit-category">Category</label>
+    <select id="outfit-category" name="category">
+        <option value="womens">Women's</option>
+        <option value="mens">Men's</option>
+        <option value="unisex" selected>Unisex</option>
+        <option value="kids">Kids</option>
+    </select>
+
     <div class="outfit-field">
         <label for="outfit-tags">Tags</label>
         <div class="outfit-tag-input" id="outfit-tag-editor">
@@ -211,6 +219,7 @@
         class="saved-outfit-card"
         data-outfit-id="{{ outfit.id }}"
         data-description="{{ outfit.description }}"
+        data-category="{{ outfit.category }}"
         data-tags="{{ outfit.tags|join:',' }}"
         data-publish="{% if outfit.publish %}true{% else %}false{% endif %}"
         data-anonymous="{% if outfit.anonymous %}true{% else %}false{% endif %}"

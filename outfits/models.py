@@ -5,6 +5,14 @@ from clothing.models import Clothing, default_clothing_transform
 from clothing.tags import TagsField
 import uuid
 
+CATEGORY_CHOICES = [
+    ("womens", "Women's"),
+    ("mens", "Men's"),
+    ("unisex", "Unisex"),
+    ("kids", "Kids"),
+]
+
+
 # Create your models here.
 class Outfit(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -15,6 +23,11 @@ class Outfit(models.Model):
     )
     display_name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
+    category = models.CharField(
+        max_length=50,
+        choices=CATEGORY_CHOICES,
+        default="unisex",
+    )
     tags = TagsField()
     price = models.DecimalField(
         max_digits=10,

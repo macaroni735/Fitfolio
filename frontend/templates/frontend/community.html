@@ -132,6 +132,7 @@
                 <h2>{{ outfit.display_name }}</h2>
 
                 <p>{{ outfit.description }}</p>
+                <p>Category: {{ outfit.get_category_display }}</p>
 
                 {% if outfit.anonymous %}
                     <p>Shared anonymously</p>

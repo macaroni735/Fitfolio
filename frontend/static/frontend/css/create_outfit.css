@@ -643,6 +643,7 @@ body {
 
 #outfit-name,
 #outfit-description,
+#outfit-category,
 #outfit-price {
     width: 100%;
     padding: 13px 15px;
@@ -662,6 +663,7 @@ body {
 
 #outfit-name:focus,
 #outfit-description:focus,
+#outfit-category:focus,
 #outfit-price:focus {
     border-color: #D987B7;
     box-shadow: 0 0 0 3px rgba(241, 184, 217, 0.25);
