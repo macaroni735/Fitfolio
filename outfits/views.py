@@ -29,6 +29,7 @@ def save_outfit(request):
     category = _choice(data.get("category"), CATEGORY_VALUES, "unisex")
     clothing_ids = data.get("clothing_ids", [])
     clothing_transforms = data.get("clothing_transforms", {})
+    clothing_layer_order = data.get("clothing_layer_order", [])
     publish = data.get("publish", False)
     outfit_id = data.get("outfit_id")
     tags = normalize_tags(data.get("tags", []))
@@ -59,6 +60,13 @@ def save_outfit(request):
         return JsonResponse({"error": "Invalid clothing transforms."}, status=400)
 
     selected_ids = {str(item_id) for item_id in clothing_ids}
+    layer_by_id = _parse_layer_order(
+        clothing_layer_order,
+        selected_ids,
+        fallback_order=[str(item_id) for item_id in clothing_ids],
+    )
+    if layer_by_id is None:
+        return JsonResponse({"error": "Invalid clothing layer order."}, status=400)
 
     for item_id, transform in clothing_transforms.items():
         if str(item_id) not in selected_ids:
@@ -162,13 +170,18 @@ def save_outfit(request):
         outfit.clothing.set(clothing)
 
         for item in clothing:
-            transform = clothing_transforms.get(str(item.pk))
-
+            item_id = str(item.pk)
+            updates = {
+                "layer": layer_by_id.get(item_id, 0),
+            }
+            transform = clothing_transforms.get(item_id)
             if transform is not None:
-                OutfitClothing.objects.filter(
-                    outfit=outfit,
-                    clothing=item
-                ).update(transform=transform)
+                updates["transform"] = transform
+
+            OutfitClothing.objects.filter(
+                outfit=outfit,
+                clothing=item,
+            ).update(**updates)
 
         if thumbnail is not None:
             _assign_thumbnail(outfit, thumbnail)
@@ -228,6 +241,35 @@ def _assign_thumbnail(outfit, uploaded_file):
 def _choice(value, allowed, default):
     value = str(value or "").strip()
     return value if value in allowed else default
+
+
+def _parse_layer_order(layer_order, selected_ids, fallback_order=None):
+    if layer_order in (None, ""):
+        layer_order = []
+
+    if not isinstance(layer_order, list):
+        return None
+
+    normalized = [str(item_id) for item_id in layer_order]
+    if len(normalized) != len(set(normalized)):
+        return None
+
+    if set(normalized) != selected_ids:
+        # Fall back to selection order when the client omits layers.
+        if not normalized and fallback_order is not None:
+            normalized = [
+                item_id for item_id in fallback_order
+                if item_id in selected_ids
+            ]
+        else:
+            return None
+
+    total = len(normalized)
+    # layer_order is top-to-bottom (front first); higher layer draws on top.
+    return {
+        item_id: total - index
+        for index, item_id in enumerate(normalized)
+    }
 
 
 def _parse_price(value, for_sale):

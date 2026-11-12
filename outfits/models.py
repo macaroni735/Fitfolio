@@ -81,8 +81,10 @@ class OutfitClothing(models.Model):
         default=default_clothing_transform,
         blank=True,
     )
+    layer = models.PositiveIntegerField(default=0)
 
     class Meta:
+        ordering = ["layer", "id"]
         constraints = [
             models.UniqueConstraint(
                 fields=["outfit", "clothing"],

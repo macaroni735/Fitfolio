@@ -47,59 +47,102 @@
 
                 <h3>Your Wardrobe</h3>
 
-                <div class="category-buttons">
-    <button type="button" class="category active" data-filter="all">All</button>
-    <button type="button" class="category" data-filter="tops">Tops</button>
-    <button type="button" class="category" data-filter="bottoms">Bottoms</button>
-    <button type="button" class="category" data-filter="dresses">Dresses</button>
-    <button type="button" class="category" data-filter="outerwear">Outerwear</button>
-    <button type="button" class="category" data-filter="shoes">Shoes</button>
-    <button type="button" class="category" data-filter="accessories">Accessories</button>
-    <button type="button" class="category" data-filter="other">Other</button>
-</div>
+                <div class="wardrobe-tabs" role="tablist" aria-label="Wardrobe views">
+                    <button
+                        type="button"
+                        class="wardrobe-tab active"
+                        id="wardrobe-tab-button"
+                        role="tab"
+                        aria-selected="true"
+                        aria-controls="wardrobe-tab-panel"
+                        data-wardrobe-tab="wardrobe"
+                    >
+                        Wardrobe
+                    </button>
+                    <button
+                        type="button"
+                        class="wardrobe-tab"
+                        id="layers-tab-button"
+                        role="tab"
+                        aria-selected="false"
+                        aria-controls="layers-tab-panel"
+                        data-wardrobe-tab="layers"
+                    >
+                        Layers
+                    </button>
+                </div>
 
-                
-<div class="clothing-options">
-    {% for item in clothing_items %}
-        <div class="clothing-card">
-            <button
-                type="button"
-                class="edit-clothing-btn"
-                {% include 'frontend/partials/edit_clothing_button_attrs.html' %}
-            >
-                <i class="fa-solid fa-pen"></i>
-            </button>
+                <div
+                    class="wardrobe-tab-panel"
+                    id="wardrobe-tab-panel"
+                    role="tabpanel"
+                    aria-labelledby="wardrobe-tab-button"
+                >
+                    <div class="category-buttons">
+                        <button type="button" class="category active" data-filter="all">All</button>
+                        <button type="button" class="category" data-filter="tops">Tops</button>
+                        <button type="button" class="category" data-filter="bottoms">Bottoms</button>
+                        <button type="button" class="category" data-filter="dresses">Dresses</button>
+                        <button type="button" class="category" data-filter="outerwear">Outerwear</button>
+                        <button type="button" class="category" data-filter="shoes">Shoes</button>
+                        <button type="button" class="category" data-filter="accessories">Accessories</button>
+                        <button type="button" class="category" data-filter="other">Other</button>
+                    </div>
 
-            <button
-                type="button"
-                class="clothing-item"
-                data-item-id="{{ item.id }}"
-                data-category="{{ item.article_type }}"
-                data-transform-x="{{ item.transform.x }}"
-                data-transform-y="{{ item.transform.y }}"
-                data-transform-rotation="{{ item.transform.rotation }}"
-                data-transform-scale="{{ item.transform.scale }}"
-            >
-                {% if item.final_front_image %}
-                    <img src="{{ item.final_front_image.url }}" alt="{{ item.display_name }}">
-                {% elif item.processed_front_image %}
-                    <img src="{{ item.processed_front_image.url }}" alt="{{ item.display_name }}">
-                {% elif item.original_front_image %}
-                    <img src="{{ item.original_front_image.url }}" alt="{{ item.display_name }}">
-                {% else %}
-                    <span>👚</span>
-                {% endif %}
-                <p>{{ item.display_name }}</p>
-            </button>
-        </div>
-    {% empty %}
-        <div class="wardrobe-empty">
-            <span>👗</span>
-            <p>Your wardrobe is empty!</p>
-            <p>Add some clothing pieces to start creating outfits.</p>
-        </div>
-    {% endfor %}
-</div>
+                    <div class="clothing-options">
+                        {% for item in clothing_items %}
+                            <div class="clothing-card">
+                                <button
+                                    type="button"
+                                    class="edit-clothing-btn"
+                                    {% include 'frontend/partials/edit_clothing_button_attrs.html' %}
+                                >
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="clothing-item"
+                                    data-item-id="{{ item.id }}"
+                                    data-category="{{ item.article_type }}"
+                                    data-transform-x="{{ item.transform.x }}"
+                                    data-transform-y="{{ item.transform.y }}"
+                                    data-transform-rotation="{{ item.transform.rotation }}"
+                                    data-transform-scale="{{ item.transform.scale }}"
+                                >
+                                    {% if item.final_front_image %}
+                                        <img src="{{ item.final_front_image.url }}" alt="{{ item.display_name }}">
+                                    {% elif item.processed_front_image %}
+                                        <img src="{{ item.processed_front_image.url }}" alt="{{ item.display_name }}">
+                                    {% elif item.original_front_image %}
+                                        <img src="{{ item.original_front_image.url }}" alt="{{ item.display_name }}">
+                                    {% else %}
+                                        <span>👚</span>
+                                    {% endif %}
+                                    <p>{{ item.display_name }}</p>
+                                </button>
+                            </div>
+                        {% empty %}
+                            <div class="wardrobe-empty">
+                                <span>👗</span>
+                                <p>Your wardrobe is empty!</p>
+                                <p>Add some clothing pieces to start creating outfits.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div
+                    class="wardrobe-tab-panel"
+                    id="layers-tab-panel"
+                    role="tabpanel"
+                    aria-labelledby="layers-tab-button"
+                    hidden
+                >
+                    <p class="layers-hint">Top of the list appears in front. Drag any item to reorder.</p>
+                    <div class="layers-list" id="layers-list"></div>
+                    <p class="layers-empty" id="layers-empty">Select clothing to manage layers. ♡</p>
+                </div>
             </div>
             <div class="outfit-preview">
 
@@ -234,6 +277,7 @@
                     data-y="{{ placement.transform.y }}"
                     data-rotation="{{ placement.transform.rotation }}"
                     data-scale="{{ placement.transform.scale }}"
+                    data-layer="{{ placement.layer }}"
                 ></span>
             {% endfor %}
         </div>

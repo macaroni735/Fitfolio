@@ -1,10 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
     const clothingItems = document.querySelectorAll('.clothing-item');
+    const clothingById = new Map(
+        Array.from(clothingItems).map(item => [item.dataset.itemId, item])
+    );
     const clothingTransforms = {};
+    const layerOrder = [];
     const categoryButtons = document.querySelectorAll('.category');
     const mannequinStage = document.getElementById('mannequin-stage');
     const clothingLayer = document.getElementById('mannequin-clothing-layer');
     const mannequinHint = document.querySelector('.mannequin-hint');
+    const layersList = document.getElementById('layers-list');
+    const layersEmpty = document.getElementById('layers-empty');
+    const wardrobeTabButtons = document.querySelectorAll('[data-wardrobe-tab]');
+    const wardrobeTabPanel = document.getElementById('wardrobe-tab-panel');
+    const layersTabPanel = document.getElementById('layers-tab-panel');
     let editingOutfitId = null;
 
     const DEFAULT_TRANSFORM = {
@@ -145,11 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const orderedItems = Array.from(selectedItems).sort((left, right) => {
-            const leftCategory = (left.dataset.category || 'other').toLowerCase();
-            const rightCategory = (right.dataset.category || 'other').toLowerCase();
-            return (categoryOrder[leftCategory] || 7) - (categoryOrder[rightCategory] || 7);
-        });
+        const orderedItems = getSelectedItemsInLayerOrder().slice().reverse();
 
         for (const item of orderedItems) {
             const previewImage = item.querySelector('img');
@@ -195,6 +200,291 @@ document.addEventListener('DOMContentLoaded', () => {
         return clothingTransforms[id];
     }
 
+    function categoryScore(item) {
+        const category = (item?.dataset.category || 'other').toLowerCase();
+        return categoryOrder[category] || 7;
+    }
+
+    function defaultLayerInsertIndex(item) {
+        const score = categoryScore(item);
+        for (let index = 0; index < layerOrder.length; index += 1) {
+            const other = clothingById.get(layerOrder[index]);
+            if (score >= categoryScore(other)) {
+                return index;
+            }
+        }
+        return layerOrder.length;
+    }
+
+    function addToLayerOrder(itemId) {
+        if (!itemId || layerOrder.includes(itemId)) {
+            return;
+        }
+
+        const item = clothingById.get(itemId);
+        const insertAt = item ? defaultLayerInsertIndex(item) : 0;
+        layerOrder.splice(insertAt, 0, itemId);
+    }
+
+    function removeFromLayerOrder(itemId) {
+        const index = layerOrder.indexOf(itemId);
+        if (index >= 0) {
+            layerOrder.splice(index, 1);
+        }
+    }
+
+    function applyMannequinLayerOrder() {
+        const selectedItems = getSelectedItemsInLayerOrder();
+        selectedItems.forEach((item, index) => {
+            const slot = clothingLayer.querySelector(
+                `.outfit-clothing-slot[data-item-id="${item.dataset.itemId}"]`
+            );
+            if (slot) {
+                slot.style.zIndex = String(selectedItems.length - index);
+            }
+        });
+    }
+
+    function getDragAfterElement(y) {
+        const rows = Array.from(layersList.querySelectorAll('.layer-row'));
+
+        return rows.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset, element: child };
+            }
+            return closest;
+        }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+    }
+
+    function bindLayerDrag(row) {
+        let dragging = false;
+        let activePointerId = null;
+        let offsetY = 0;
+        let placeholder = null;
+
+        const clearFloatingStyles = () => {
+            row.style.position = '';
+            row.style.left = '';
+            row.style.top = '';
+            row.style.width = '';
+            row.style.zIndex = '';
+            row.style.pointerEvents = '';
+        };
+
+        const syncOrderFromPlaceholder = () => {
+            if (!placeholder) {
+                return;
+            }
+
+            const nextOrder = [];
+            Array.from(layersList.children).forEach(child => {
+                if (child === placeholder) {
+                    nextOrder.push(row.dataset.itemId);
+                    return;
+                }
+                if (child.classList?.contains('layer-row') && child.dataset.itemId) {
+                    nextOrder.push(child.dataset.itemId);
+                }
+            });
+            layerOrder.splice(0, layerOrder.length, ...nextOrder);
+            applyMannequinLayerOrder();
+        };
+
+        const stopDragging = event => {
+            if (!dragging) {
+                return;
+            }
+
+            if (
+                event
+                && activePointerId !== null
+                && event.pointerId !== activePointerId
+            ) {
+                return;
+            }
+
+            dragging = false;
+            const pointerId = activePointerId;
+            activePointerId = null;
+            row.classList.remove('is-dragging');
+            layersList.classList.remove('is-reordering');
+
+            if (
+                pointerId !== null
+                && row.hasPointerCapture?.(pointerId)
+            ) {
+                row.releasePointerCapture(pointerId);
+            }
+
+            if (placeholder?.parentNode) {
+                placeholder.replaceWith(row);
+            } else if (!row.isConnected) {
+                layersList.append(row);
+            }
+
+            placeholder = null;
+            clearFloatingStyles();
+
+            const nextOrder = Array.from(layersList.querySelectorAll('.layer-row'))
+                .map(entry => entry.dataset.itemId)
+                .filter(Boolean);
+            layerOrder.splice(0, layerOrder.length, ...nextOrder);
+            updatePreview();
+        };
+
+        row.addEventListener('pointerdown', event => {
+            if (event.button || dragging) {
+                return;
+            }
+
+            if (event.target.closest('.layer-remove')) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const rect = row.getBoundingClientRect();
+            offsetY = event.clientY - rect.top;
+            activePointerId = event.pointerId;
+            dragging = true;
+
+            placeholder = document.createElement('div');
+            placeholder.className = 'layer-row-placeholder';
+            placeholder.style.height = `${rect.height}px`;
+            row.after(placeholder);
+
+            row.classList.add('is-dragging');
+            layersList.classList.add('is-reordering');
+            row.style.position = 'fixed';
+            row.style.left = `${rect.left}px`;
+            row.style.top = `${rect.top}px`;
+            row.style.width = `${rect.width}px`;
+            row.style.zIndex = '1000';
+            row.style.pointerEvents = 'none';
+            document.body.append(row);
+
+            row.setPointerCapture(event.pointerId);
+            syncOrderFromPlaceholder();
+        });
+
+        row.addEventListener('pointermove', event => {
+            if (!dragging || event.pointerId !== activePointerId || !placeholder) {
+                return;
+            }
+
+            row.style.top = `${event.clientY - offsetY}px`;
+
+            const afterElement = getDragAfterElement(event.clientY);
+            if (afterElement) {
+                layersList.insertBefore(placeholder, afterElement);
+            } else {
+                layersList.append(placeholder);
+            }
+
+            syncOrderFromPlaceholder();
+        });
+
+        row.addEventListener('pointerup', stopDragging);
+        row.addEventListener('pointercancel', stopDragging);
+        row.addEventListener('lostpointercapture', stopDragging);
+    }
+
+    function getSelectedItemsInLayerOrder() {
+        return layerOrder
+            .map(itemId => clothingById.get(itemId))
+            .filter(item => item?.classList.contains('selected'));
+    }
+
+    function setWardrobeTab(tabName) {
+        const showLayers = tabName === 'layers';
+        wardrobeTabButtons.forEach(button => {
+            const isActive = button.dataset.wardrobeTab === tabName;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-selected', String(isActive));
+        });
+        wardrobeTabPanel.hidden = showLayers;
+        layersTabPanel.hidden = !showLayers;
+    }
+
+    function updateLayersPanel() {
+        if (!layersList || !layersEmpty) {
+            return;
+        }
+
+        const selectedItems = getSelectedItemsInLayerOrder();
+        layersEmpty.hidden = selectedItems.length > 0;
+        layersList.replaceChildren();
+
+        selectedItems.forEach((item, index) => {
+            const image = item.querySelector('img');
+            const name = item.querySelector('p')?.textContent.trim()
+                || image?.alt
+                || 'Clothing item';
+
+            const row = document.createElement('div');
+            row.className = 'layer-row';
+            row.dataset.itemId = item.dataset.itemId;
+
+            const handle = document.createElement('div');
+            handle.className = 'layer-drag-handle';
+            handle.setAttribute('role', 'button');
+            handle.setAttribute('tabindex', '0');
+            handle.setAttribute('aria-label', `Drag to reorder ${name}`);
+            handle.innerHTML = '<i class="fa-solid fa-grip-lines" aria-hidden="true"></i>';
+
+            const preview = document.createElement('div');
+            preview.className = 'layer-preview';
+            if (image) {
+                const thumb = document.createElement('img');
+                thumb.src = image.src;
+                thumb.alt = name;
+                preview.append(thumb);
+            } else {
+                preview.textContent = '👚';
+            }
+
+            const details = document.createElement('div');
+            details.className = 'layer-details';
+            const title = document.createElement('p');
+            title.className = 'layer-name';
+            title.textContent = name;
+            const meta = document.createElement('span');
+            meta.className = 'layer-meta';
+            meta.textContent = index === 0 ? 'Front' : (
+                index === selectedItems.length - 1 ? 'Back' : `Layer ${index + 1}`
+            );
+            details.append(title, meta);
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'layer-remove';
+            removeButton.setAttribute('aria-label', `Remove ${name} from outfit`);
+            removeButton.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+            removeButton.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                item.classList.remove('selected');
+                item.setAttribute('aria-pressed', 'false');
+                delete clothingTransforms[item.dataset.itemId];
+                removeFromLayerOrder(item.dataset.itemId);
+                updatePreview();
+            });
+
+            row.append(handle, preview, details, removeButton);
+            layersList.append(row);
+            bindLayerDrag(row);
+        });
+    }
+
+    wardrobeTabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            setWardrobeTab(button.dataset.wardrobeTab);
+        });
+    });
+
     categoryButtons.forEach(button => {
         button.addEventListener('click', () => {
             const selectedCategory = button.dataset.filter;
@@ -228,8 +518,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!isSelected) {
                 delete clothingTransforms[item.dataset.itemId];
+                removeFromLayerOrder(item.dataset.itemId);
             } else {
                 clothingTransforms[item.dataset.itemId] = readItemTransform(item);
+                addToLayerOrder(item.dataset.itemId);
             }
 
             updatePreview();
@@ -294,22 +586,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updatePreview() {
-        const selectedItems = document.querySelectorAll('.clothing-item.selected');
+        const selectedItems = getSelectedItemsInLayerOrder();
         clothingLayer.replaceChildren();
 
-        selectedItems.forEach(item => {
+        selectedItems.forEach((item, index) => {
             const image = item.querySelector('img');
             if (!image) {
                 return;
             }
 
-            const category = (item.dataset.category || 'other').toLowerCase();
             const transform = getActiveTransform(item);
-
             const slot = document.createElement('div');
             slot.className = 'mannequin-item-slot outfit-clothing-slot';
             slot.dataset.itemId = item.dataset.itemId;
-            slot.style.zIndex = String(categoryOrder[category] || 7);
+            slot.style.zIndex = String(selectedItems.length - index);
 
             const clothingImage = document.createElement('img');
             clothingImage.src = image.src;
@@ -326,6 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mannequinHint.textContent = selectedItems.length
             ? 'Your outfit is coming together! ♡'
             : 'Choose clothing from your wardrobe to style your mannequin ♡';
+        updateLayersPanel();
     }
 
     const saveButton = document.getElementById('save-outfit');
@@ -481,9 +772,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const anonymous = publish && anonymousCheckbox.checked;
         const forSale = publish && forSaleCheckbox.checked;
 
-        const selectedItems = Array.from(
-            document.querySelectorAll('.clothing-item.selected')
-        );
+        const selectedItems = getSelectedItemsInLayerOrder();
         const clothingIds = selectedItems.map(item => item.dataset.itemId);
 
         if (!name) {
@@ -525,6 +814,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 category,
                 clothing_ids: clothingIds,
                 clothing_transforms: transformsPayload,
+                clothing_layer_order: layerOrder.filter(id => clothingIds.includes(id)),
                 tags: outfitTags,
                 publish,
                 anonymous,
@@ -646,17 +936,27 @@ document.addEventListener('DOMContentLoaded', () => {
             Object.keys(clothingTransforms).forEach(id => {
                 delete clothingTransforms[id];
             });
+            layerOrder.splice(0, layerOrder.length);
 
-            placements.forEach(placement => {
-                const id = placement.dataset.clothingId;
-                const item = Array.from(clothingItems).find(
-                    clothing => clothing.dataset.itemId === id
-                );
+            const loadedPlacements = Array.from(placements)
+                .map(placement => ({
+                    id: placement.dataset.clothingId,
+                    layer: Number(placement.dataset.layer),
+                    placement,
+                }))
+                .filter(entry => clothingById.has(entry.id))
+                .sort((left, right) => {
+                    const leftLayer = Number.isFinite(left.layer) ? left.layer : 0;
+                    const rightLayer = Number.isFinite(right.layer) ? right.layer : 0;
+                    if (rightLayer !== leftLayer) {
+                        return rightLayer - leftLayer;
+                    }
+                    return categoryScore(clothingById.get(right.id))
+                        - categoryScore(clothingById.get(left.id));
+                });
 
-                if (!item) {
-                    return;
-                }
-
+            loadedPlacements.forEach(({ id, placement }) => {
+                const item = clothingById.get(id);
                 item.classList.add('selected');
                 item.setAttribute('aria-pressed', 'true');
                 clothingTransforms[id] = parseTransform({
@@ -665,6 +965,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     rotation: placement.dataset.rotation,
                     scale: placement.dataset.scale,
                 });
+                layerOrder.push(id);
             });
 
             updatePreview();
