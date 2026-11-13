@@ -385,110 +385,28 @@ button, a {
     }
 }
 
-.home-mannequin-stage {
-    position: relative;
-    width: 260px;
-    height: 440px;
-    max-width: 100%;
+.home-mannequin-stage.mannequin-frame {
+    width: min(260px, 100%);
     margin: 0 auto;
-    overflow: hidden;
     background: linear-gradient(180deg, #FFFCFA 0%, #FCECF5 100%);
     border: 1px solid #F1D6E4;
-    border-radius: 20px;
 }
 
-.home-mannequin-body {
-    position: absolute;
-    top: 28px;
-    left: 50%;
-    width: 170px;
-    height: 390px;
-    transform: translateX(-50%);
-}
-
-.home-mannequin-head,
-.home-mannequin-neck,
-.home-mannequin-torso,
-.home-mannequin-arm,
-.home-mannequin-leg {
-    position: absolute;
-    background: #E8CFC7;
-    border: 1px solid #D9BDB5;
-}
-
-.home-mannequin-head {
-    top: 0;
-    left: 62px;
-    width: 46px;
-    height: 58px;
-    border-radius: 48% 48% 45% 45%;
-    z-index: 4;
-}
-
-.home-mannequin-neck {
-    top: 50px;
-    left: 77px;
-    width: 17px;
-    height: 26px;
-    border-radius: 8px;
-    z-index: 2;
-}
-
-.home-mannequin-torso {
-    top: 69px;
-    left: 42px;
-    width: 86px;
-    height: 143px;
-    border-radius: 35px 35px 25px 25px;
-    z-index: 2;
-}
-
-.home-mannequin-arm {
-    top: 78px;
-    width: 25px;
-    height: 155px;
-    border-radius: 20px;
-    z-index: 1;
-}
-
-.home-mannequin-arm-left {
-    left: 22px;
-    transform: rotate(8deg);
-}
-
-.home-mannequin-arm-right {
-    right: 22px;
-    transform: rotate(-8deg);
-}
-
-.home-mannequin-leg {
-    top: 195px;
-    width: 32px;
-    height: 175px;
-    border-radius: 16px 16px 12px 12px;
-    z-index: 1;
-}
-
-.home-mannequin-leg-left {
-    left: 49px;
-    transform: rotate(3deg);
-}
-
-.home-mannequin-leg-right {
-    right: 49px;
-    transform: rotate(-3deg);
+.home-mannequin-stage .mannequin-guide {
+    opacity: 0.35;
 }
 
 .home-mannequin-clothing-layer {
     position: absolute;
     inset: 0;
-    z-index: 5;
+    z-index: 3;
     pointer-events: none;
 }
 
-.home-mannequin-clothing {
-    position: absolute;
-    transform: translateX(-50%);
-    object-fit: contain;
+.home-outfit-slot {
+    pointer-events: none;
+}
+
+.home-outfit-slot .placed-clothing {
     pointer-events: none;
 }
