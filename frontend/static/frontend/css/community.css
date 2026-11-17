@@ -599,3 +599,239 @@ main {
         font-size: 12px;
     }
 }
+
+
+.outfit-rating-section {
+    margin-top: 18px;
+}
+
+.open-rating-btn {
+    width: 100%;
+    padding: 11px 16px;
+    border: 1px solid #E8BDD4;
+    border-radius: 12px;
+    background: #FCECF5;
+    color: #B85E8D;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.open-rating-btn:hover {
+    background: #F5D6E7;
+    transform: translateY(-2px);
+}
+
+.open-rating-btn i {
+    margin-right: 6px;
+}
+
+.rating-modal[hidden] {
+    display: none;
+}
+
+.rating-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.rating-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(45, 35, 52, 0.55);
+    backdrop-filter: blur(5px);
+}
+
+.rating-modal-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 32px;
+    background: #FFFCFA;
+    border: 1px solid #F0DCE7;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(45, 35, 52, 0.2);
+    text-align: center;
+}
+
+.rating-modal-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: #FCECF5;
+    color: #B85E8D;
+    cursor: pointer;
+}
+
+.rating-modal-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: #FCECF5;
+    color: #D878A8;
+    font-size: 22px;
+}
+
+.rating-modal-content h2 {
+    margin: 0 0 8px;
+    color: #4B4560;
+    font-family: 'Playfair Display', serif;
+    font-size: 27px;
+}
+
+.rating-outfit-name {
+    color: #D878A8;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.rating-modal-subtitle {
+    color: #9B8B9A;
+    font-size: 12px;
+    margin-bottom: 20px;
+}
+
+.rating-stars {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 18px 0 8px;
+}
+
+.rating-star {
+    padding: 5px;
+    border: none;
+    background: transparent;
+    color: #D9C7D1;
+    font-size: 30px;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.rating-star:hover {
+    transform: scale(1.15);
+}
+
+.rating-star.active {
+    color: #E9AD52;
+}
+
+.rating-selected-label {
+    margin: 0 0 24px;
+    color: #B85E8D;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.rating-field-label {
+    display: block;
+    margin: 16px 0 8px;
+    color: #4B4560;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+}
+
+#rating-review-title,
+#rating-review-description {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #E9D9E3;
+    border-radius: 12px;
+    background: white;
+    color: #4B4560;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    outline: none;
+}
+
+#rating-review-title:focus,
+#rating-review-description:focus {
+    border-color: #D878A8;
+}
+
+#rating-review-description {
+    resize: vertical;
+}
+
+.rating-error {
+    color: #C64B66;
+    font-size: 12px;
+    margin-top: 14px;
+}
+
+.rating-error[hidden] {
+    display: none;
+}
+
+.rating-modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.rating-cancel-btn,
+.rating-submit-btn {
+    flex: 1;
+    padding: 13px;
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.rating-cancel-btn {
+    border: 1px solid #E9D9E3;
+    background: white;
+    color: #817487;
+}
+
+.rating-submit-btn {
+    border: none;
+    background: #D878A8;
+    color: white;
+}
+
+.rating-submit-btn:hover:not(:disabled) {
+    background: #C56596;
+}
+
+.rating-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+    .rating-modal-content {
+        padding: 26px 18px;
+    }
+
+    .rating-stars {
+        gap: 5px;
+    }
+
+    .rating-star {
+        font-size: 26px;
+    }
+}

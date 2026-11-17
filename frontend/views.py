@@ -9,7 +9,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from outfits.models import Outfit
 from clothing.models import Clothing
+from ratings.models import Rating
 from clothing.tags import normalize_tags
+from .models import UserProfile
 
 ARTICLE_TYPE_VALUES = {
     "tops",
@@ -235,6 +237,31 @@ def community_view(request):
         })
     feed.sort(key=lambda entry: entry["created_at"], reverse=True)
 
+    user_ratings = Rating.objects.filter(
+        user=request.user
+    )
+
+    clothing_ratings = {
+        rating.clothing_id: rating
+        for rating in user_ratings
+        if rating.clothing_id is not None
+    }
+
+    outfit_ratings = {
+        rating.outfit_id: rating
+        for rating in user_ratings
+        if rating.outfit_id is not None
+    }
+
+    for entry in feed:
+        item = entry["object"]
+
+        if entry["kind"] == "clothing":
+            entry["user_rating"] = clothing_ratings.get(item.id)
+        else:
+            entry["user_rating"] = outfit_ratings.get(item.id)
+
+
     return render(request, "frontend/community.html", {
         "community_feed": feed,
         "selected_types": selected_types,
@@ -350,17 +377,21 @@ def _parse_budget(raw):
 
 @login_required(login_url='login')
 def profile_view(request):
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         email = request.POST.get('email', '').strip()
 
         if not username:
             return render(request, 'frontend/profile.html', {
+                'profile': profile,
                 'error': 'Username cannot be empty.'
             })
 
         if User.objects.exclude(pk=request.user.pk).filter(username=username).exists():
             return render(request, 'frontend/profile.html', {
+                'profile': profile,
                 'error': 'That username is already taken.'
             })
 
@@ -368,8 +399,15 @@ def profile_view(request):
         request.user.email = email
         request.user.save()
 
+        if 'profile_picture' in request.FILES:
+            profile.profile_picture = request.FILES['profile_picture']
+            profile.save()
+
         return render(request, 'frontend/profile.html', {
+            'profile': profile,
             'success': 'Profile updated successfully!'
         })
 
-    return render(request, 'frontend/profile.html')
+    return render(request, 'frontend/profile.html', {
+        'profile': profile
+    })

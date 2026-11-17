@@ -1,23 +1,30 @@
+
 * {
     box-sizing: border-box;
 }
 
+html {
+    width: 100%;
+    min-height: 100%;
+}
+
 body {
     margin: 0;
+    width: 100%;
     min-height: 100vh;
     background: #FCECF5;
     font-family: 'Poppins', sans-serif;
     color: #4B4560;
+    overflow-x: clip;
 }
-
 
 .wardrobe-container {
     width: 100%;
     max-width: 1100px;
     margin: 0 auto;
     padding: 50px 40px 140px;
+    min-width: 0;
 }
-
 
 .wardrobe-header {
     text-align: center;
@@ -51,56 +58,44 @@ body {
 }
 
 .search-box {
+    width: 100%;
     max-width: 500px;
     margin: 0 auto;
-
     display: flex;
     align-items: center;
     gap: 10px;
-
     background-color: rgba(255, 255, 255, 0.55);
-
     padding: 12px 18px;
     border-radius: 15px;
-
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10);
 }
 
 .search-box input {
     width: 100%;
-
+    min-width: 0;
     border: none;
     outline: none;
-
     background: transparent;
-
     font-family: 'Poppins', sans-serif;
     font-size: 14px;
 }
 
 .category-buttons {
     margin-top: 22px;
-
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-
     gap: 10px;
 }
 
 .category {
     padding: 8px 17px;
-
     border: none;
     border-radius: 20px;
-
     background-color: rgba(255, 255, 255, 0.55);
-
     font-family: 'Poppins', sans-serif;
     font-weight: 500;
-
     cursor: pointer;
-
     transition: transform 0.2s ease,
                 box-shadow 0.2s ease,
                 background-color 0.2s ease;
@@ -108,10 +103,8 @@ body {
 
 .category:hover {
     transform: translateY(-3px);
-
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-
-    background-color: #ffffff;
+    background-color: #FFFFFF;
 }
 
 .category.active {
@@ -120,45 +113,44 @@ body {
 
 .wardrobe-grid {
     margin-top: 35px;
-
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 22px;
+    width: 100%;
+    min-width: 0;
 }
 
 .clothing-card {
     position: relative;
+    min-width: 0;
     background-color: rgba(255, 255, 255, 0.55);
     padding: 18px;
     border-radius: 20px;
     text-align: center;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.10);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease,
+                box-shadow 0.2s ease;
 }
 
 .clothing-card:hover {
     transform: translateY(-6px);
-
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
 }
 
 .clothing-image {
+    width: 100%;
     height: 150px;
-
     display: flex;
     justify-content: center;
     align-items: center;
-
     background-color: rgba(255, 255, 255, 0.45);
-
     border-radius: 15px;
-
     font-size: 70px;
     overflow: hidden;
 }
 
 .clothing-image img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -173,86 +165,14 @@ body {
 .clothing-card h3 {
     margin: 14px 0 2px;
     font-size: 15px;
+    overflow-wrap: anywhere;
 }
 
 .clothing-card p {
     margin: 0;
-
     font-size: 12px;
     color: #555555;
-}
-
-
-@media (max-width: 900px) {
-
-    .wardrobe-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-}
-
-@media (max-width: 550px) {
-
-    .wardrobe-container {
-        padding-left: 20px;
-        padding-right: 20px;
-    }
-
-    .wardrobe-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .clothing-card {
-        max-width: 300px;
-        width: 100%;
-        margin: 0 auto;
-    }
-}
-
-
-.logout-form {
-    position: fixed;
-    top: 85px;
-    right: 35px;
-    left: auto;
-    width: auto;
-    margin: 0;
-    z-index: 1000;
-}
-
-.logout-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 9px;
-    background: #F1B8D9;
-    color: #4B4560;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 50px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 5px 15px rgba(126, 73, 108, 0.18);
-    transition: all 0.2s ease;
-}
-
-.logout-button:hover {
-    background: #E7A2CA;
-    transform: translateY(-2px);
-}
-
-@media (max-width: 480px) {
-    .logout-form {
-        top: 70px;
-        right: 15px;
-    }
-
-    .logout-button {
-        padding: 10px 16px;
-        font-size: 12px;
-    }
+    overflow-wrap: anywhere;
 }
 
 .wardrobe-grid .edit-clothing-btn {
@@ -260,20 +180,16 @@ body {
     top: 12px;
     right: 12px;
     z-index: 2;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     width: 34px;
     height: 34px;
     padding: 0;
-
     background: #FFFCFA;
     color: #D878A8;
     border: 1px solid #F1D6E4;
     border-radius: 50%;
-
     font-size: 13px;
     cursor: pointer;
     box-shadow: 0 3px 10px rgba(75, 69, 96, 0.1);
@@ -290,7 +206,6 @@ body {
     display: none !important;
 }
 
-
 .clothing-modal-overlay {
     position: fixed;
     inset: 0;
@@ -301,6 +216,7 @@ body {
     padding: 24px;
     background: rgba(75, 69, 96, 0.45);
     backdrop-filter: blur(5px);
+    overflow-y: auto;
 }
 
 .clothing-modal-overlay[hidden] {
@@ -370,6 +286,7 @@ body {
 #edit-clothing-form textarea,
 #edit-clothing-form select {
     width: 100%;
+    min-width: 0;
     padding: 12px 14px;
     border: 1px solid #EADCE5;
     border-radius: 12px;
@@ -536,7 +453,8 @@ body {
     background: #FFF9FC;
     color: #D878A8;
     cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    transition: background 0.15s ease,
+                border-color 0.15s ease;
 }
 
 .edit-gallery-add:hover {
@@ -606,7 +524,31 @@ body {
     background: #F7DDE9;
 }
 
+@media (max-width: 900px) {
+    .wardrobe-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 @media (max-width: 550px) {
+    .wardrobe-container {
+        padding: 35px 20px 120px;
+    }
+
+    .wardrobe-header h1 {
+        font-size: 36px;
+    }
+
+    .wardrobe-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .clothing-card {
+        max-width: 300px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
     .clothing-modal {
         padding: 26px 20px;
     }

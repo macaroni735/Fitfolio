@@ -24,11 +24,27 @@
                 <h1>My Profile</h1>
                 <p>A little space that's all about you. ♡</p>
             </div>
+            
 
             <div class="profile-card">
-                <div class="profile-avatar">
-                    <i class="fa-solid fa-user"></i>
-                </div>
+                
+
+<div class="profile-avatar-section">
+    <div class="profile-avatar">
+        {% if profile.profile_picture %}
+            <img src="{{ profile.profile_picture.url }}" alt="Your profile picture" class="profile-avatar-image">
+        {% else %}
+            <i class="fa-solid fa-user"></i>
+        {% endif %}
+    </div>
+
+    <button type="button" id="edit-profile-picture" class="edit-profile-picture-btn">
+        <i class="fa-solid fa-camera"></i>
+        Edit profile picture
+    </button>
+</div>
+
+
 
                 <h2>{{ request.user.username }}</h2>
                 <p class="profile-member">Fitfolio Member</p>
@@ -41,7 +57,7 @@
                     <p class="profile-error">{{ error }}</p>
                 {% endif %}
 
-                <form method="POST" class="profile-form">
+                <form method="POST" enctype="multipart/form-data" class="profile-form">
                     {% csrf_token %}
 
                     <label for="username">Username</label>
@@ -67,11 +83,93 @@
                         Save Changes
                     </button>
                 </form>
+                <form action="{% url 'logout' %}" method="POST" class="profile-logout-form">
+    {% csrf_token %}
+    <button type="submit" class="profile-logout-btn">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        Log Out
+    </button>
+</form>
             </div>
+            
         </div>
     </main>
 
-    {% include 'frontend/navbar.html' %}
+<div class="profile-picture-modal" id="profile-picture-modal" hidden>
+    <div class="profile-picture-modal-backdrop"></div>
 
+    <div class="profile-picture-modal-content"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="picture-modal-title">
+
+        <button type="button"
+                class="picture-modal-close"
+                id="picture-modal-close"
+                aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <h2 id="picture-modal-title">Edit Profile Picture ♡</h2>
+        <p class="picture-modal-subtitle">
+            Make your profile picture perfectly you!
+        </p>
+
+        <div class="picture-crop-area" id="picture-crop-area">
+            <div class="picture-crop-circle">
+                <img id="picture-crop-preview"
+                     alt="Profile picture crop preview"
+                     hidden>
+                <i class="fa-solid fa-user" id="picture-crop-placeholder"></i>
+            </div>
+        </div>
+
+        <label for="picture-file-input" class="picture-choose-btn">
+            <i class="fa-solid fa-image"></i>
+            Choose Photo
+        </label>
+
+        <input type="file"
+               id="picture-file-input"
+               accept="image/png,image/jpeg,image/webp"
+               hidden>
+
+        <div class="picture-zoom-controls">
+            <label for="picture-zoom">Zoom</label>
+            <div class="picture-zoom-row">
+                <i class="fa-solid fa-magnifying-glass-minus"></i>
+                <input type="range"
+                       id="picture-zoom"
+                       min="1"
+                       max="3"
+                       step="0.01"
+                       value="1">
+                <i class="fa-solid fa-magnifying-glass-plus"></i>
+            </div>
+        </div>
+
+        <p class="picture-drag-hint">
+            Drag your photo to reposition it inside the circle.
+        </p>
+
+        <div class="picture-modal-actions">
+            <button type="button"
+                    class="picture-cancel-btn"
+                    id="picture-cancel-btn">
+                Cancel
+            </button>
+
+            <button type="button"
+                    class="picture-save-btn"
+                    id="picture-save-btn"
+                    disabled>
+                Save Picture
+            </button>
+        </div>
+    </div>
+</div>
+
+    {% include 'frontend/navbar.html' %}
+<script src="{% static 'frontend/js/profile.js' %}" defer></script>
 </body>
 </html>
