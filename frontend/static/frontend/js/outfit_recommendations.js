@@ -40,9 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const pickRandom = group => group[Math.floor(Math.random() * group.length)];
 
-    let lookNumber = 0;
-    let currentSignature = '';
-    let currentWeather = null;
+   let lookNumber = 0;
+let currentSignature = '';
+let currentWeather = null;
+const lookHistory = [];
+let currentLookIndex = -1;
 
     function parseTransform(raw) {
         const transform = { ...DEFAULT_TRANSFORM };
@@ -185,21 +187,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showNewLook() {
-        let outfit = generateLook();
-        let signature = outfit.map(item => item.id).sort().join(',');
+    let outfit = generateLook();
+    let signature = outfit.map(item => item.id).sort().join(',');
 
-        for (let attempt = 0; attempt < 10 && signature === currentSignature; attempt++) {
-            outfit = generateLook();
-            signature = outfit.map(item => item.id).sort().join(',');
-        }
-
-        currentSignature = signature;
-        lookNumber++;
-        displayLook(outfit);
+    for (let attempt = 0; attempt < 10 && signature === currentSignature; attempt++) {
+        outfit = generateLook();
+        signature = outfit.map(item => item.id).sort().join(',');
     }
 
-    newLookButton?.addEventListener('click', showNewLook);
-    lookArrows.forEach(arrow => arrow.addEventListener('click', showNewLook));
+    currentSignature = signature;
 
-    showNewLook();
+    lookHistory.push(outfit);
+    currentLookIndex = lookHistory.length - 1;
+
+    lookNumber = currentLookIndex + 1;
+    displayLook(outfit);
+}
+
+function navigateLook(direction) {
+    if (!lookHistory.length) return;
+
+    const nextIndex = currentLookIndex + direction;
+
+    if (nextIndex < 0 || nextIndex >= lookHistory.length) return;
+
+    currentLookIndex = nextIndex;
+    lookNumber = currentLookIndex + 1;
+
+    displayLook(lookHistory[currentLookIndex]);
+}
+
+   newLookButton?.addEventListener('click', showNewLook);
+
+lookArrows.forEach((arrow, index) => {
+    arrow.addEventListener('click', () => {
+        navigateLook(index === 0 ? -1 : 1);
+    });
+});
+
+showNewLook();
 });
